@@ -6,13 +6,7 @@ declare(strict_types=1);
 namespace EnjoysCMS\Module\Catalog\Admin\Product\Form;
 
 
-use DI\DependencyException;
-use DI\NotFoundException;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Exception\NotSupported;
-use Doctrine\ORM\Exception\ORMException;
-use Doctrine\ORM\NoResultException;
-use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\EntityManagerInterface;
 use Enjoys\Forms\Form;
 use EnjoysCMS\Module\Catalog\Entity\Product;
 use EnjoysCMS\Module\Catalog\Entity\ProductMeta;
@@ -21,15 +15,9 @@ use Psr\Http\Message\ServerRequestInterface;
 final class MetaProductForm
 {
 
-    /**
-     * @throws DependencyException
-     * @throws NoResultException
-     * @throws NotFoundException
-     * @throws NotSupported
-     */
     public function __construct(
         private readonly ServerRequestInterface $request,
-        private readonly EntityManager $em,
+        private readonly EntityManagerInterface $em,
     ) {
     }
 
@@ -56,10 +44,6 @@ final class MetaProductForm
         return $form;
     }
 
-    /**
-     * @throws OptimisticLockException
-     * @throws ORMException
-     */
     public function doAction(Product $product): void
     {
         if (null === $meta = $this->em->getRepository(ProductMeta::class)->findOneBy(['product' => $product])) {

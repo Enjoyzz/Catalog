@@ -3,7 +3,7 @@
 namespace EnjoysCMS\Module\Catalog\Api;
 
 use DI\Container;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Exception\NotSupported;
 use Doctrine\ORM\NonUniqueResultException;
@@ -21,17 +21,15 @@ use function json_decode;
 class Category extends AbstractController
 {
 
-    public function __construct(Container $container, private readonly EntityManager $em)
+    public function __construct(Container $container, private readonly EntityManagerInterface $em)
     {
         parent::__construct($container);
     }
 
     /**
-     * @param EntityManager $em
-     * @return ResponseInterface
      * @throws QueryException
-     * @throws NoResultException
      * @throws NonUniqueResultException
+     * @throws NoResultException
      */
     #[Route(
         path: '/get/tree',

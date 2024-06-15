@@ -102,7 +102,6 @@ final class ProductController extends AdminController
      * @throws RuntimeError
      * @throws LoaderError
      * @throws DependencyException
-     * @throws OptimisticLockException
      * @throws SyntaxError
      * @throws NotFoundException
      * @throws QueryException
@@ -224,7 +223,6 @@ final class ProductController extends AdminController
      * @throws FilesystemException
      * @throws LoaderError
      * @throws DependencyException
-     * @throws OptimisticLockException
      * @throws SyntaxError
      * @throws NotFoundException
      * @throws NoResultException
@@ -268,7 +266,6 @@ final class ProductController extends AdminController
      * @throws RuntimeError
      * @throws LoaderError
      * @throws DependencyException
-     * @throws OptimisticLockException
      * @throws SyntaxError
      * @throws NotFoundException
      * @throws NoResultException
@@ -311,7 +308,6 @@ final class ProductController extends AdminController
      * @throws RuntimeError
      * @throws LoaderError
      * @throws DependencyException
-     * @throws OptimisticLockException
      * @throws SyntaxError
      * @throws NotFoundException
      * @throws NoResultException
@@ -358,7 +354,6 @@ final class ProductController extends AdminController
      * @throws RuntimeError
      * @throws LoaderError
      * @throws DependencyException
-     * @throws OptimisticLockException
      * @throws SyntaxError
      * @throws NotFoundException
      * @throws NoResultException
@@ -447,6 +442,7 @@ final class ProductController extends AdminController
      * @throws SyntaxError
      * @throws NotFoundException
      * @throws NoResultException
+     * @throws ExceptionRule
      */
     #[Route(
         path: '/{product_id}/urls/edit',
@@ -494,6 +490,7 @@ final class ProductController extends AdminController
      * @throws SyntaxError
      * @throws NotFoundException
      * @throws NoResultException
+     * @throws ExceptionRule
      */
     #[Route(
         path: '/{product_id}/urls/add',
@@ -533,7 +530,6 @@ final class ProductController extends AdminController
      * @throws RuntimeError
      * @throws DependencyException
      * @throws LoaderError
-     * @throws OptimisticLockException
      * @throws SyntaxError
      * @throws NotFoundException
      * @throws NoResultException
@@ -902,7 +898,6 @@ final class ProductController extends AdminController
      * @throws FilesystemException
      * @throws DependencyException
      * @throws LoaderError
-     * @throws OptimisticLockException
      * @throws SyntaxError
      * @throws NotFoundException
      * @throws NoResultException
@@ -1030,11 +1025,14 @@ final class ProductController extends AdminController
         );
     }
 
+
     /**
      * @throws SyntaxError
-     * @throws ORMException
+     * @throws NotFoundException
+     * @throws \ReflectionException
      * @throws RuntimeError
      * @throws LoaderError
+     * @throws DependencyException
      */
     #[Route(
         path: '/options',

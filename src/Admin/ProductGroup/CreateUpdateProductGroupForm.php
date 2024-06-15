@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace EnjoysCMS\Module\Catalog\Admin\ProductGroup;
 
-use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
@@ -92,7 +91,6 @@ final class CreateUpdateProductGroupForm
      */
     public function doAction(ProductGroup $productGroup = null): void
     {
-
         $relationRepository = $this->em->getRepository(ProductGroupOption::class);
 
 
@@ -119,16 +117,17 @@ final class CreateUpdateProductGroupForm
         );
 
 
-
         foreach ($removeOptions as $removeOption) {
-            if (null !== $relation = $relationRepository->find(['productGroup' => $productGroup, 'optionKey' => $removeOption])){
+            if (null !== $relation = $relationRepository->find(
+                    ['productGroup' => $productGroup, 'optionKey' => $removeOption]
+                )) {
                 $productGroup->removeOptions([$relation]);
                 $this->em->remove($relation);
             }
         }
 
         foreach ($options as $option) {
-            if ($relationRepository->find(['productGroup' => $productGroup, 'optionKey' => $option]) === null){
+            if ($relationRepository->find(['productGroup' => $productGroup, 'optionKey' => $option]) === null) {
                 $productGroup->addOption(new ProductGroupOption($productGroup, $option));
             }
         }

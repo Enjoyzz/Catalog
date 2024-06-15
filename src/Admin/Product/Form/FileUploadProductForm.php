@@ -6,9 +6,7 @@ declare(strict_types=1);
 namespace EnjoysCMS\Module\Catalog\Admin\Product\Form;
 
 
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Exception\ORMException;
-use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\EntityManagerInterface;
 use Enjoys\Forms\Exception\ExceptionRule;
 use Enjoys\Forms\Form;
 use Enjoys\Forms\Rules;
@@ -39,12 +37,10 @@ final class FileUploadProductForm
     }
 
     /**
-     * @throws OptimisticLockException
      * @throws FilesystemException
-     * @throws ORMException
      */
     public function doAction(
-        EntityManager $em,
+        EntityManagerInterface $em,
         ServerRequestInterface $request,
         Product $product,
         Config $config

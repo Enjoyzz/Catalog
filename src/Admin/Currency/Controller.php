@@ -8,8 +8,7 @@ namespace EnjoysCMS\Module\Catalog\Admin\Currency;
 
 use DI\DependencyException;
 use DI\NotFoundException;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Exception\NotSupported;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
 use Enjoys\Forms\Elements\Hidden;
@@ -30,14 +29,13 @@ final class Controller extends AdminController
     /**
      * @throws SyntaxError
      * @throws RuntimeError
-     * @throws NotSupported
      * @throws LoaderError
      */
     #[Route(
         name: 'list',
         comment: 'Просмотр списка валют'
     )]
-    public function manage(EntityManager $em): ResponseInterface
+    public function manage(EntityManagerInterface $em): ResponseInterface
     {
         $this->breadcrumbs->setLastBreadcrumb('Список валют', 'catalog/admin/currency');
         return $this->response(
@@ -52,7 +50,6 @@ final class Controller extends AdminController
 
     /**
      * @throws ExceptionRule
-     * @throws ORMException
      * @throws RuntimeError
      * @throws LoaderError
      * @throws DependencyException
@@ -159,7 +156,6 @@ final class Controller extends AdminController
     )]
     public function delete(Delete $delete): ResponseInterface
     {
-
         $form = $delete->getForm();
 
         /** @var Hidden $rule */

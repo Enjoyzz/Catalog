@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace EnjoysCMS\Module\Catalog\Admin\Product\Form;
 
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Exception\ORMException;
-use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\EntityManagerInterface;
 use Enjoys\Forms\AttributeFactory;
 use Enjoys\Forms\Exception\ExceptionRule;
 use Enjoys\Forms\Form;
@@ -20,7 +18,7 @@ class TagsProductForm
 {
 
     public function __construct(
-        private readonly EntityManager $em,
+        private readonly EntityManagerInterface $em,
         private readonly ServerRequestInterface $request,
     ) {
     }
@@ -53,18 +51,12 @@ class TagsProductForm
         return $form;
     }
 
-
-    /**
-     * @throws OptimisticLockException
-     * @throws ORMException
-     */
     public function doAction(Product $product): void
     {
         $tags = array_map('trim', array_unique(explode(',', $this->request->getParsedBody()['tags'] ?? null)));
         $product->clearTags();
         $product->addTagsFromArray($this->getTagsFromArray($tags));
         $this->em->flush();
-
     }
 
     private function getTagsFromArray(array $tags = []): array

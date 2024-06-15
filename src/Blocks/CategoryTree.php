@@ -7,14 +7,12 @@ namespace EnjoysCMS\Module\Catalog\Blocks;
 
 
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query\QueryException;
 use EnjoysCMS\Core\Block\AbstractBlock;
 use EnjoysCMS\Core\Block\Annotation\Block;
-use EnjoysCMS\Module\Catalog\Entity\Category;
-use EnjoysCMS\Module\Catalog\Repository;
+use EnjoysCMS\Module\Catalog\Repository\Category;
 use Psr\Http\Message\ServerRequestInterface;
 use Twig\Environment;
 use Twig\Error\LoaderError;
@@ -44,11 +42,13 @@ use Twig\Error\SyntaxError;
 final class CategoryTree extends AbstractBlock
 {
 
-    private EntityRepository|Repository\Category $categoryRepository;
 
-    public function __construct(EntityManager $em, private readonly Environment $twig, private readonly ServerRequestInterface $request)
-    {
-        $this->categoryRepository = $em->getRepository(Category::class);
+    public function __construct(
+        EntityManager $em,
+        private readonly Category $categoryRepository,
+        private readonly Environment $twig,
+        private readonly ServerRequestInterface $request
+    ) {
     }
 
 

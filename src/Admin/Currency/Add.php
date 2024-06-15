@@ -6,8 +6,7 @@ declare(strict_types=1);
 namespace EnjoysCMS\Module\Catalog\Admin\Currency;
 
 
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Exception\ORMException;
+use Doctrine\ORM\EntityManagerInterface;
 use Enjoys\Forms\Exception\ExceptionRule;
 use Enjoys\Forms\Form;
 use Enjoys\Forms\Rules;
@@ -19,15 +18,12 @@ use Psr\Http\Message\ServerRequestInterface;
 final class Add
 {
     public function __construct(
-        private readonly EntityManager $em,
+        private readonly EntityManagerInterface $em,
         private readonly ServerRequestInterface $request
     ) {
     }
 
 
-    /**
-     * @throws ORMException
-     */
     public function doAction(): void
     {
         $currency = new Currency();

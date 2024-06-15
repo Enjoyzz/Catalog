@@ -6,6 +6,7 @@ use DI\Container;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Exception\NotSupported;
 use Doctrine\ORM\Query\QueryException;
@@ -44,9 +45,9 @@ class ProductController extends AbstractController
 
     public function __construct(
         Container $container,
-        private UrlGeneratorInterface $urlGenerator,
-        private EntityManager $em,
-        private Config $config
+        private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly EntityManagerInterface $em,
+        private readonly Config $config
     ) {
         parent::__construct($container);
         $this->encoders = [new XmlEncoder(), new JsonEncoder()];

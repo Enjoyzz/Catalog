@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace EnjoysCMS\Module\Catalog\Admin\Product\Options;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Exception\NotSupported;
-use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\NoResultException;
 use Enjoys\Forms\AttributeFactory;
 use Enjoys\Forms\Elements\Html;
@@ -19,7 +17,6 @@ use Enjoys\Forms\Form;
 use Enjoys\Forms\Interfaces\ElementInterface;
 use Enjoys\Forms\Renderer\Bootstrap4\Group;
 use EnjoysCMS\Module\Catalog\Api\ProductOptions;
-use EnjoysCMS\Module\Catalog\Config;
 use EnjoysCMS\Module\Catalog\Entity\OptionKey;
 use EnjoysCMS\Module\Catalog\Entity\OptionValue;
 use EnjoysCMS\Module\Catalog\Entity\Product;
@@ -39,12 +36,10 @@ final class ManageOptions
 
     /**
      * @throws NoResultException
-     * @throws NotSupported
      */
     public function __construct(
-        private readonly EntityManager $em,
+        private readonly EntityManagerInterface $em,
         private readonly ServerRequestInterface $request,
-        private readonly Config $config,
         private readonly ProductOptions $productOptionsController,
         private readonly UrlGeneratorInterface $urlGenerator,
     ) {
@@ -83,13 +78,13 @@ final class ManageOptions
                     ))
                         ->setDescription($optionKey->getNote())
                         ->setAttributes(
-                        AttributeFactory::createFromArray([
-                            'class' => 'option-key form-control',
-                            'placeholder' => 'Опция',
-                            'grid' => 'col-md-3',
-                            'value' => $optionKey->getName()
-                        ])
-                    )->addClass('col-md-3', Group::ATTRIBUTES_GROUP),
+                            AttributeFactory::createFromArray([
+                                'class' => 'option-key form-control',
+                                'placeholder' => 'Опция',
+                                'grid' => 'col-md-3',
+                                'value' => $optionKey->getName()
+                            ])
+                        )->addClass('col-md-3', Group::ATTRIBUTES_GROUP),
                     (new Text(
                         'options[' . $optionKey->getId() . '][unit]'
                     ))->setAttributes(
@@ -152,9 +147,6 @@ final class ManageOptions
     }
 
 
-    /**
-     * @throws ORMException
-     */
     public function doSave(): void
     {
         $this->product->clearOptions();
@@ -164,7 +156,7 @@ final class ManageOptions
             }
             $optionKey = $this->keyRepository->getOptionKey($option['option'], $option['unit']);
             foreach ($option['value'] as $value) {
-                if ($value === '' || is_null($value)){
+                if ($value === '' || is_null($value)) {
                     continue;
                 }
                 $optionValue = $this->valueRepository->getOptionValue($value, $optionKey);
@@ -185,7 +177,7 @@ final class ManageOptions
      */
     private function getValueInputElement(OptionKey $optionKey): ElementInterface
     {
-        return match ($optionKey->getType()){
+        return match ($optionKey->getType()) {
             OptionType::ENUM, OptionType::NUMERIC => $this->getSelectValue($optionKey),
             OptionType::BOOL => $this->getSwitchValue($optionKey),
             OptionType::TEXT => $this->getTextValue($optionKey),
@@ -225,7 +217,7 @@ final class ManageOptions
     {
         $element = new Radio('options[' . $optionKey->getId() . '][value][]');
 
-        $element->fill([1 =>  $optionKey->getParams()[1] ?? 'Да', 0 => $optionKey->getParams()[0] ?? 'Нет']);
+        $element->fill([1 => $optionKey->getParams()[1] ?? 'Да', 0 => $optionKey->getParams()[0] ?? 'Нет']);
         return $element;
     }
 

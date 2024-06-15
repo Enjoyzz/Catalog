@@ -6,13 +6,10 @@ declare(strict_types=1);
 namespace EnjoysCMS\Module\Catalog\Admin\Product\Form;
 
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Exception\NotSupported;
-use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
-use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\Query\QueryException;
 use Enjoys\Cookie\Cookie;
 use Enjoys\Forms\AttributeFactory;
@@ -38,11 +35,8 @@ final class CreateUpdateProductForm
     private EntityRepository|\EnjoysCMS\Module\Catalog\Repository\Category $categoryRepository;
 
 
-    /**
-     * @throws NotSupported
-     */
     public function __construct(
-        private readonly EntityManager $em,
+        private readonly EntityManagerInterface $em,
         private readonly ServerRequestInterface $request,
         private readonly Config $config,
         private readonly Cookie $cookie,
@@ -229,11 +223,6 @@ final class CreateUpdateProductForm
         return $form;
     }
 
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     * @throws NotSupported
-     */
     public function doAction(Product $product = null): Product
     {
         $productEntity = $product ?? new Product();

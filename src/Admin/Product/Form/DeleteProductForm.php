@@ -5,10 +5,7 @@ declare(strict_types=1);
 namespace EnjoysCMS\Module\Catalog\Admin\Product\Form;
 
 
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Exception\ORMException;
-use Doctrine\ORM\NoResultException;
-use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\EntityManagerInterface;
 use Enjoys\Forms\Form;
 use EnjoysCMS\Module\Catalog\Config;
 use EnjoysCMS\Module\Catalog\Entity\Product;
@@ -16,11 +13,9 @@ use League\Flysystem\FilesystemException;
 
 final class DeleteProductForm
 {
-    /**
-     * @throws NoResultException
-     */
+
     public function __construct(
-        private readonly EntityManager $em,
+        private readonly EntityManagerInterface $em,
         private readonly Config $config,
     ) {
     }
@@ -36,8 +31,6 @@ final class DeleteProductForm
     }
 
     /**
-     * @throws OptimisticLockException
-     * @throws ORMException
      * @throws FilesystemException
      */
     public function doAction(Product $product): void
@@ -53,22 +46,20 @@ final class DeleteProductForm
     }
 
     /**
-     * @throws ORMException
      * @throws FilesystemException
      */
     private function removeImages(Product $product): void
     {
         foreach ($product->getImages() as $image) {
             $fs = $this->config->getImageStorageUpload($image->getStorage())->getFileSystem();
-            $fs->delete($image->getFilename().'.'.$image->getExtension());
-            $fs->delete($image->getFilename().'_large.'.$image->getExtension());
-            $fs->delete($image->getFilename().'_small.'.$image->getExtension());
+            $fs->delete($image->getFilename() . '.' . $image->getExtension());
+            $fs->delete($image->getFilename() . '_large.' . $image->getExtension());
+            $fs->delete($image->getFilename() . '_small.' . $image->getExtension());
             $this->em->remove($image);
         }
     }
 
     /**
-     * @throws ORMException
      * @throws FilesystemException
      */
     private function removeFiles(Product $product): void
@@ -80,9 +71,6 @@ final class DeleteProductForm
         }
     }
 
-    /**
-     * @throws ORMException
-     */
     private function removePrices(Product $product): void
     {
         foreach ($product->getPrices() as $price) {
@@ -90,9 +78,6 @@ final class DeleteProductForm
         }
     }
 
-    /**
-     * @throws ORMException
-     */
     private function removeUrls(Product $product): void
     {
         foreach ($product->getUrls() as $url) {

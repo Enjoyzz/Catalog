@@ -9,7 +9,6 @@ namespace EnjoysCMS\Module\Catalog\Admin\Category;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Exception\NotSupported;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\NonUniqueResultException;
@@ -28,18 +27,12 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 final class CreateUpdateCategoryForm
 {
 
-    private EntityRepository|\EnjoysCMS\Module\Catalog\Repository\Category $repository;
-
-
-    /**
-     * @throws NotSupported
-     */
     public function __construct(
         private readonly EntityManager $em,
         private readonly ServerRequestInterface $request,
         private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly \EnjoysCMS\Module\Catalog\Repository\Category $repository,
     ) {
-        $this->repository = $this->em->getRepository(Category::class);
     }
 
 

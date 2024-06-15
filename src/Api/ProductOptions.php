@@ -6,6 +6,8 @@ declare(strict_types=1);
 namespace EnjoysCMS\Module\Catalog\Api;
 
 
+use DI\DependencyException;
+use DI\NotFoundException;
 use Doctrine\ORM\EntityManagerInterface;
 use EnjoysCMS\Core\AbstractController;
 use EnjoysCMS\Module\Catalog\Entity\Product;
@@ -16,6 +18,10 @@ use Symfony\Component\Routing\Annotation\Route;
 final class ProductOptions extends AbstractController
 {
 
+    /**
+     * @throws DependencyException
+     * @throws NotFoundException
+     */
     #[Route(
         path: 'admin/catalog/get-product-options-by-category',
         name: '@catalog_get_product_options_by_category',

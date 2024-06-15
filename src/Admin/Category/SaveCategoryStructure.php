@@ -2,9 +2,8 @@
 
 namespace EnjoysCMS\Module\Catalog\Admin\Category;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Exception\NotSupported;
 use Doctrine\ORM\Exception\ORMException;
 use EnjoysCMS\Module\Catalog\Entity\Category;
 use LogicException;
@@ -14,13 +13,10 @@ class SaveCategoryStructure
 
     private EntityRepository|\EnjoysCMS\Module\Catalog\Repository\Category $categoryRepository;
 
-    /**
-     * @throws NotSupported
-     */
-    public function __construct(private readonly EntityManager $em)
+
+    public function __construct(private readonly EntityManagerInterface $em)
     {
         $this->categoryRepository = $this->em->getRepository(Category::class);
-
     }
 
     /**
@@ -44,7 +40,7 @@ class SaveCategoryStructure
             $item->setSort($key);
             $this->em->persist($item);
 
-            if (array_key_exists($slug = $item->getSlug(), $tmp)){
+            if (array_key_exists($slug = $item->getSlug(), $tmp)) {
                 throw new LogicException(sprintf('Пути совпадают в: %s', $slug));
             }
             $tmp[$slug] = true;

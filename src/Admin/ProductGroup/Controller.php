@@ -73,6 +73,17 @@ final class Controller extends AdminController
         return $this->response('');
     }
 
+    /**
+     * @throws ExceptionRule
+     * @throws ORMException
+     * @throws RuntimeError
+     * @throws DependencyException
+     * @throws LoaderError
+     * @throws OptimisticLockException
+     * @throws SyntaxError
+     * @throws NotFoundException
+     * @throws NoResultException
+     */
     #[Route(
         path: '/edit/{group_id}',
         name: 'edit',
@@ -112,12 +123,10 @@ final class Controller extends AdminController
     }
 
     /**
-     * @throws ExceptionRule
      * @throws ORMException
      * @throws RuntimeError
      * @throws DependencyException
      * @throws LoaderError
-     * @throws OptimisticLockException
      * @throws SyntaxError
      * @throws NotFoundException
      * @throws NoResultException

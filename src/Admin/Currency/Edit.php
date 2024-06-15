@@ -6,11 +6,8 @@ declare(strict_types=1);
 namespace EnjoysCMS\Module\Catalog\Admin\Currency;
 
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Exception\NotSupported;
-use Doctrine\ORM\Exception\ORMException;
-use Doctrine\ORM\OptimisticLockException;
 use Enjoys\Forms\AttributeFactory;
 use Enjoys\Forms\Exception\ExceptionRule;
 use Enjoys\Forms\Form;
@@ -25,11 +22,8 @@ final class Edit
     private Currency $currency;
     private EntityRepository $repository;
 
-    /**
-     * @throws NotSupported
-     */
     public function __construct(
-        private readonly EntityManager $em,
+        private readonly EntityManagerInterface $em,
         private readonly ServerRequestInterface $request,
     ) {
         $currencyId = $this->request->getQueryParams()['id']
@@ -87,11 +81,6 @@ final class Edit
         return $form;
     }
 
-
-    /**
-     * @throws OptimisticLockException
-     * @throws ORMException
-     */
     public function doAction(): void
     {
         $this->currency->setName($this->request->getParsedBody()['name'] ?? null);
@@ -121,7 +110,6 @@ final class Edit
         );
 
         $this->em->flush();
-
     }
 
     public function getCurrency(): Currency

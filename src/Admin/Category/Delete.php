@@ -6,10 +6,7 @@ declare(strict_types=1);
 namespace EnjoysCMS\Module\Catalog\Admin\Category;
 
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Exception\NotSupported;
 use Doctrine\ORM\Exception\ORMException;
-use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\Persistence\Mapping\MappingException;
 use Enjoys\Forms\Form;
@@ -19,20 +16,13 @@ use Psr\Http\Message\ServerRequestInterface;
 
 final class Delete
 {
-    private \EnjoysCMS\Module\Catalog\Repository\Category|EntityRepository $categoryRepository;
-    private \EnjoysCMS\Module\Catalog\Repository\Product|EntityRepository $productRepository;
 
-
-    /**
-     * @throws NotSupported
-     * @throws NoResultException
-     */
     public function __construct(
         private readonly EntityManager $em,
+        private readonly \EnjoysCMS\Module\Catalog\Repository\Category $categoryRepository,
+        private readonly \EnjoysCMS\Module\Catalog\Repository\Product $productRepository,
         private readonly ServerRequestInterface $request,
     ) {
-        $this->categoryRepository = $this->em->getRepository(Category::class);
-        $this->productRepository = $this->em->getRepository(Product::class);
     }
 
 
@@ -69,7 +59,6 @@ final class Delete
         $this->em->remove($category->getMeta());
 
         if (($this->request->getParsedBody()['remove_childs'] ?? null) !== null) {
-            /** @var array $allCategoryIds */
             $allCategoryIds = $this->categoryRepository->getAllIds($category);
             /** @var Product[] $products */
             $products = $this->productRepository->findByCategorysIds($allCategoryIds);

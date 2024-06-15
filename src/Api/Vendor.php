@@ -6,10 +6,9 @@ namespace EnjoysCMS\Module\Catalog\Api;
 
 
 use Doctrine\Common\Collections\Criteria;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\EntityRepository;
 use EnjoysCMS\Core\AbstractController;
 use EnjoysCMS\Core\Routing\Annotation\Route;
+use EnjoysCMS\Module\Catalog\Repository\VendorRepository;
 use JMS\Serializer\SerializerBuilder;
 use Psr\Http\Message\ResponseInterface;
 
@@ -26,14 +25,9 @@ final class Vendor extends AbstractController
         methods: ['GET'],
         comment: 'API: Поиск бренда или производителя'
     )]
-    public function find(): ResponseInterface
+    public function find(VendorRepository $vendorRepository): ResponseInterface
     {
         $serializer = SerializerBuilder::create()->build();
-
-        /** @var EntityRepository $vendorRepository */
-        $vendorRepository = $this->container->get(EntityManagerInterface::class)->getRepository(
-            \EnjoysCMS\Module\Catalog\Entity\Vendor::class
-        );
         $query = $this->request->getQueryParams()['q'] ?? '';
 
         $result = $vendorRepository->matching(

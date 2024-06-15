@@ -8,8 +8,6 @@ namespace EnjoysCMS\Module\Catalog\Admin\Category;
 
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Exception\NotSupported;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\OptimisticLockException;
@@ -23,19 +21,15 @@ final class SetExtraFieldsToChildren
 
     private Category $category;
 
-    private EntityRepository|\EnjoysCMS\Module\Catalog\Repository\Category $categoryRepository;
-
 
     /**
      * @throws NoResultException
-     * @throws NotSupported
      */
     public function __construct(
         private readonly EntityManager $em,
         private readonly ServerRequestInterface $request,
+        private readonly \EnjoysCMS\Module\Catalog\Repository\Category $categoryRepository
     ) {
-        $this->categoryRepository = $this->em->getRepository(Category::class);
-
         $this->category = $this->categoryRepository->find(
             $this->request->getQueryParams()['id'] ?? 0
         ) ?? throw new NoResultException();

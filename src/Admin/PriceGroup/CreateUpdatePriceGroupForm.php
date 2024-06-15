@@ -6,28 +6,18 @@ declare(strict_types=1);
 namespace EnjoysCMS\Module\Catalog\Admin\PriceGroup;
 
 
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Exception\NotSupported;
-use Doctrine\ORM\Exception\ORMException;
-use Doctrine\ORM\NoResultException;
-use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\EntityManagerInterface;
 use Enjoys\Forms\Exception\ExceptionRule;
 use Enjoys\Forms\Form;
-use Enjoys\Forms\Interfaces\RendererInterface;
 use Enjoys\Forms\Rules;
-use EnjoysCMS\Core\Http\Response\RedirectInterface;
 use EnjoysCMS\Module\Catalog\Entity\PriceGroup;
 use Psr\Http\Message\ServerRequestInterface;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 final class CreateUpdatePriceGroupForm
 {
-    /**
-     * @throws NoResultException
-     * @throws NotSupported
-     */
+
     public function __construct(
-        private readonly EntityManager $em,
+        private readonly EntityManagerInterface $em,
         private readonly ServerRequestInterface $request,
     ) {
     }
@@ -66,10 +56,6 @@ final class CreateUpdatePriceGroupForm
         return $form;
     }
 
-    /**
-     * @throws OptimisticLockException
-     * @throws ORMException
-     */
     public function doAction(PriceGroup $priceGroup = null): void
     {
         $priceGroup = $priceGroup ?? new PriceGroup();

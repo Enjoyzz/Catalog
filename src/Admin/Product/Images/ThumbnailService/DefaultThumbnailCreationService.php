@@ -17,7 +17,7 @@ use RuntimeException;
 final class DefaultThumbnailCreationService implements ThumbnailService
 {
 
-    public function __construct(private Config $config)
+    public function __construct(private readonly Config $config)
     {
     }
 

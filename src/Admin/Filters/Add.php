@@ -2,10 +2,7 @@
 
 namespace EnjoysCMS\Module\Catalog\Admin\Filters;
 
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Exception\NotSupported;
-use Doctrine\ORM\Exception\ORMException;
-use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\EntityManagerInterface;
 use EnjoysCMS\Core\Routing\Annotation\Route;
 use EnjoysCMS\Module\Catalog\Entity\Category;
 use EnjoysCMS\Module\Catalog\Entity\CategoryFilter;
@@ -27,18 +24,13 @@ class Add
     private stdClass $input;
 
     public function __construct(
-        private ServerRequestInterface $request,
-        private ResponseInterface $response,
-        private EntityManager $em,
+        private readonly ServerRequestInterface $request,
+        private readonly ResponseInterface $response,
+        private readonly EntityManagerInterface $em,
     ) {
         $this->input = json_decode($this->request->getBody()->getContents());
     }
 
-    /**
-     * @throws OptimisticLockException
-     * @throws ORMException
-     * @throws NotSupported
-     */
     public function __invoke(): ResponseInterface
     {
         $response = $this->response->withHeader('content-type', 'application/json');
@@ -63,10 +55,6 @@ class Add
         return $response;
     }
 
-    /**
-     * @throws NotSupported
-     * @throws ORMException
-     */
     private function addOptionFilter(Category $category): void
     {
         foreach ($this->input->options ?? [] as $optionKeyId) {
@@ -78,10 +66,6 @@ class Add
         }
     }
 
-    /**
-     * @throws NotSupported
-     * @throws ORMException
-     */
     private function addFilter(Category $category, array $params = null, string $hash = null): void
     {
         $hash ??= md5($this->input->filterType);
@@ -98,10 +82,6 @@ class Add
         $this->em->persist($filter);
     }
 
-
-    /**
-     * @throws NotSupported
-     */
     public function isFilterExist(Category $category, string $filterType, string $hash): bool
     {
         return null !== $this->em->getRepository(CategoryFilter::class)->findOneBy(

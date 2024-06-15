@@ -2,10 +2,7 @@
 
 namespace EnjoysCMS\Module\Catalog\Admin\Filters;
 
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Exception\NotSupported;
-use Doctrine\ORM\Exception\ORMException;
-use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\EntityManagerInterface;
 use EnjoysCMS\Core\Routing\Annotation\Route;
 use EnjoysCMS\Module\Catalog\Entity\Category;
 use EnjoysCMS\Module\Catalog\Entity\CategoryFilter;
@@ -27,20 +24,15 @@ class SetupFilterToChild
     private stdClass $input;
 
     public function __construct(
-        private ServerRequestInterface $request,
+        private readonly ServerRequestInterface $request,
         private ResponseInterface $response,
-        private EntityManager $em,
+        private readonly EntityManagerInterface $em,
     ) {
         $this->input = json_decode($this->request->getBody()->getContents());
 //        $this->input = json_decode(json_encode($this->request->getQueryParams()));
         $this->response = $this->response->withHeader('content-type', 'application/json');
     }
 
-    /**
-     * @throws OptimisticLockException
-     * @throws NotSupported
-     * @throws ORMException
-     */
     public function __invoke(): ResponseInterface
     {
         /** @var \EnjoysCMS\Module\Catalog\Repository\Category $categoryRepository */

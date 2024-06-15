@@ -10,20 +10,15 @@ use DI\Container;
 use DI\DependencyException;
 use DI\NotFoundException;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\NotSupported;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\NoResultException;
-use Doctrine\ORM\OptimisticLockException;
+use Enjoys\Forms\Exception\ExceptionRule;
 use EnjoysCMS\Core\Routing\Annotation\Route;
 use EnjoysCMS\Module\Catalog\Admin\AdminController;
 use EnjoysCMS\Module\Catalog\Config;
-use EnjoysCMS\Module\Catalog\Crud\PriceGroup\PriceGroupAdd;
-use EnjoysCMS\Module\Catalog\Crud\PriceGroup\PriceGroupDelete;
-use EnjoysCMS\Module\Catalog\Crud\PriceGroup\PriceGroupEdit;
-use EnjoysCMS\Module\Catalog\Crud\PriceGroup\PriceGroupList;
 use EnjoysCMS\Module\Catalog\Entity\PriceGroup;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -42,13 +37,14 @@ final class PriceGroupController extends AdminController
 
 
     /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      */
     #[Route(
         name: 'list'
     )]
-    public function list(EntityManager $em): ResponseInterface
+    public function list(EntityManagerInterface $em): ResponseInterface
     {
         $this->breadcrumbs->setLastBreadcrumb('Группы цен');
         return $this->response(
@@ -62,8 +58,12 @@ final class PriceGroupController extends AdminController
     }
 
     /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @throws SyntaxError
+     * @throws ExceptionRule
+     * @throws NotFoundException
+     * @throws RuntimeError
+     * @throws LoaderError
+     * @throws DependencyException
      */
     #[Route(
         path: '/add',
@@ -91,9 +91,16 @@ final class PriceGroupController extends AdminController
         );
     }
 
+
     /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @throws ExceptionRule
+     * @throws RuntimeError
+     * @throws DependencyException
+     * @throws LoaderError
+     * @throws SyntaxError
+     * @throws NotFoundException
+     * @throws NotSupported
+     * @throws NoResultException
      */
     #[Route(
         path: '/edit',
@@ -131,7 +138,6 @@ final class PriceGroupController extends AdminController
      * @throws DependencyException
      * @throws NotFoundException
      * @throws ORMException
-     * @throws OptimisticLockException
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError

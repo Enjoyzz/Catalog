@@ -6,9 +6,8 @@ declare(strict_types=1);
 namespace EnjoysCMS\Module\Catalog\Admin\Product\Options;
 
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Exception\NotSupported;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\NoResultException;
 use EnjoysCMS\Core\Http\Response\RedirectInterface;
@@ -20,11 +19,8 @@ final class FillFromProduct
 {
     private EntityRepository|ProductRepository $productRepository;
 
-    /**
-     * @throws NotSupported
-     */
     public function __construct(
-        private readonly EntityManager $em,
+        private readonly EntityManagerInterface $em,
         private readonly ServerRequestInterface $request,
         private readonly RedirectInterface $redirect,
     ) {

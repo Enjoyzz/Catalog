@@ -6,40 +6,30 @@ declare(strict_types=1);
 namespace EnjoysCMS\Module\Catalog\Actions;
 
 
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
-use Doctrine\Persistence\ObjectRepository;
 use EnjoysCMS\Core\Exception\NotFoundException;
 use EnjoysCMS\Core\Pagination\Pagination;
 use EnjoysCMS\Core\Setting\Setting;
 use EnjoysCMS\Module\Catalog\Config;
-use EnjoysCMS\Module\Catalog\Entity;
 use EnjoysCMS\Module\Catalog\Repository;
-use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 final class Search
 {
 
-//    use Options;
-
-    private ObjectRepository|EntityRepository|Repository\Product $productRepository;
     private string $searchQuery;
     private array $optionKeys = [];
 
 
     public function __construct(
-        private ContainerInterface $container,
-        private ServerRequestInterface $request,
-        private EntityManager $em,
-        private Setting $setting,
-        private Config $config
+        private readonly ServerRequestInterface $request,
+        private readonly Repository\Product $productRepository,
+        private readonly Setting $setting,
+        private readonly Config $config
     ) {
         $this->searchQuery = \trim($this->request->getQueryParams()['q'] ?? $this->request->getParsedBody()['q'] ?? '');
-        $this->productRepository = $this->em->getRepository(Entity\Product::class);
     }
 
     /**

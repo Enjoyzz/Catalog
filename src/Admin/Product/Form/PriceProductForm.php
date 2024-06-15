@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace EnjoysCMS\Module\Catalog\Admin\Product\Form;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
 use Enjoys\Forms\AttributeFactory;
@@ -20,7 +20,7 @@ final class PriceProductForm
 {
 
     public function __construct(
-        private readonly EntityManager $em,
+        private readonly EntityManagerInterface $em,
         private readonly ServerRequestInterface $request
     ) {
     }

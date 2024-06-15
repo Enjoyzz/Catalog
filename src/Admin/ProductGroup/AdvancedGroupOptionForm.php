@@ -4,21 +4,17 @@ declare(strict_types=1);
 
 namespace EnjoysCMS\Module\Catalog\Admin\ProductGroup;
 
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Exception\ORMException;
-use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\EntityManagerInterface;
 use Enjoys\Forms\Form;
 use EnjoysCMS\Module\Catalog\Entity\ProductGroupOption;
 use Psr\Http\Message\ServerRequestInterface;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Yaml\Yaml;
 
 final class AdvancedGroupOptionForm
 {
     public function __construct(
-        private readonly EntityManager $em,
+        private readonly EntityManagerInterface $em,
         private readonly ServerRequestInterface $request,
-        private readonly UrlGeneratorInterface $urlGenerator
     ) {
     }
 
@@ -50,7 +46,6 @@ final class AdvancedGroupOptionForm
         ]);
 
         foreach ($productGroupOptions as $i => $relation) {
-
             $form->header($relation->getOptionKey()->getName())->addClass('font-weight-bold mt-5');
             $form->number(sprintf('order[%s]', $i), 'Порядок сортировки');
             $form->select(sprintf('type[%s]', $i), 'Тип')
@@ -60,10 +55,10 @@ final class AdvancedGroupOptionForm
             $form->textarea(sprintf('extra[%s]', $i), 'Параметры (YAML синтаксис)')
                 ->addClass('extra-textarea')
                 ->setDescription(
-                    '<strong>Значения (id => value):</strong> <br>'.
+                    '<strong>Значения (id => value):</strong> <br>' .
                     implode('<br>', array_map(function ($i) {
                         return sprintf('%s => %s', $i->getId(), $i->getValue());
-                    }, $relation->getProductGroup()->getOptionsValues()->offsetGet($relation))).
+                    }, $relation->getProductGroup()->getOptionsValues()->offsetGet($relation))) .
                     '<br> устанавливать в параметр <strong>map</strong>'
                 );
         }
@@ -75,8 +70,6 @@ final class AdvancedGroupOptionForm
 
     /**
      * @param ProductGroupOption[] $productGroupOptions
-     * @throws ORMException
-     * @throws OptimisticLockException
      */
     public function doAction(array $productGroupOptions): void
     {

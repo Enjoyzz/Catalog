@@ -6,8 +6,9 @@ declare(strict_types=1);
 namespace EnjoysCMS\Module\Catalog\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use EnjoysCMS\Module\Catalog\Repository\VendorRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: VendorRepository::class)]
 #[ORM\Table(name: 'catalog_product_vendors')]
 class Vendor implements \Stringable
 {

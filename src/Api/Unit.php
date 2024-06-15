@@ -6,9 +6,9 @@ declare(strict_types=1);
 namespace EnjoysCMS\Module\Catalog\Api;
 
 
-use Doctrine\ORM\EntityManager;
 use EnjoysCMS\Core\AbstractController;
 use EnjoysCMS\Module\Catalog\Entity\ProductUnit;
+use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route(
@@ -20,10 +20,11 @@ use Symfony\Component\Routing\Annotation\Route;
 )]
 final class Unit extends AbstractController
 {
+
     public function __invoke(
-        EntityManager $em,
-    ) {
-        $matched = $em->getRepository(ProductUnit::class)->like(
+        \EnjoysCMS\Module\Catalog\Repository\Unit $unitRepository,
+    ): ResponseInterface {
+        $matched = $unitRepository->like(
             $this->request->getQueryParams()['query'] ?? null
         );
 

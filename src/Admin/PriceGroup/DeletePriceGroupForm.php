@@ -6,16 +6,14 @@ declare(strict_types=1);
 namespace EnjoysCMS\Module\Catalog\Admin\PriceGroup;
 
 
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Exception\ORMException;
-use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\EntityManagerInterface;
 use Enjoys\Forms\Form;
 use EnjoysCMS\Module\Catalog\Entity\PriceGroup;
 
 final class DeletePriceGroupForm
 {
 
-    public function __construct(private readonly EntityManager $em)
+    public function __construct(private readonly EntityManagerInterface $em)
     {
     }
 
@@ -34,10 +32,6 @@ final class DeletePriceGroupForm
         return $form;
     }
 
-    /**
-     * @throws OptimisticLockException
-     * @throws ORMException
-     */
     public function doAction(PriceGroup $priceGroup): void
     {
         $this->em->remove($priceGroup);

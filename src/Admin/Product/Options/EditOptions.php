@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace EnjoysCMS\Module\Catalog\Admin\Product\Options;
 
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Exception\ORMException;
-use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\EntityManagerInterface;
 use Enjoys\Forms\Exception\ExceptionRule;
 use Enjoys\Forms\Form;
 use Enjoys\Forms\Rules;
@@ -17,7 +15,7 @@ final class EditOptions
 {
 
     public function __construct(
-        private readonly EntityManager $em,
+        private readonly EntityManagerInterface $em,
         private readonly ServerRequestInterface $request,
     ) {
     }
@@ -69,8 +67,6 @@ final class EditOptions
     }
 
     /**
-     * @throws OptimisticLockException
-     * @throws ORMException
      * @throws \ReflectionException
      */
     public function doSave(OptionKey $optionKey): OptionKey
@@ -89,7 +85,10 @@ final class EditOptions
 
         $optionKey->setComparable((bool)($this->request->getParsedBody()['comparable'] ?? false));
 
-        $params = (($this->request->getParsedBody()['params'] ?? '') === '') ? null : json_decode($this->request->getParsedBody()['params'] ?? '', true);
+        $params = (($this->request->getParsedBody()['params'] ?? '') === '') ? null : json_decode(
+            $this->request->getParsedBody()['params'] ?? '',
+            true
+        );
         $optionKey->setParams($params);
 
         $this->em->flush();

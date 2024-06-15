@@ -6,12 +6,11 @@ declare(strict_types=1);
 namespace EnjoysCMS\Module\Catalog\Admin\Product\Form;
 
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Exception\NotSupported;
 use Doctrine\ORM\Exception\ORMException;
-use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\OptimisticLockException;
+use Enjoys\Forms\Exception\ExceptionRule;
 use Enjoys\Forms\Form;
 use Enjoys\Forms\Rules;
 use EnjoysCMS\Module\Catalog\Entity\Product;
@@ -25,18 +24,17 @@ final class CreateUpdateUrlProductForm
     private EntityRepository|ProductRepository $productRepository;
 
 
-    /**
-     * @throws NotSupported
-     * @throws NoResultException
-     */
     public function __construct(
-        private readonly EntityManager $em,
+        private readonly EntityManagerInterface $em,
         private readonly ServerRequestInterface $request,
     ) {
         $this->productRepository = $this->em->getRepository(Product::class);
     }
 
 
+    /**
+     * @throws ExceptionRule
+     */
     public function getForm(Product $product): Form
     {
         $url = $product->getUrlById((int)($this->request->getQueryParams()['url_id'] ?? 0));
@@ -56,8 +54,8 @@ final class CreateUpdateUrlProductForm
             ->fill([1 => 'Сделать основным?']);
 
         $form->text('path', 'Путь')->addRule(Rules::REQUIRED)
-            ->addRule(Rules::CALLBACK, 'Не допустимые символы', function (){
-                preg_match('/[.\/]/',  $this->request->getParsedBody()['path'] ?? '', $matches);
+            ->addRule(Rules::CALLBACK, 'Не допустимые символы', function () {
+                preg_match('/[.\/]/', $this->request->getParsedBody()['path'] ?? '', $matches);
                 return !$matches;
             })
             ->addRule(
@@ -104,8 +102,6 @@ final class CreateUpdateUrlProductForm
 
         $this->em->persist($url);
         $this->em->flush();
-
-
     }
 
 }

@@ -26,8 +26,10 @@ use Symfony\Component\Routing\Annotation\Route;
 class Filters extends AbstractController
 {
 
-    public function __construct(Container $container, private FilterFactory $filterFactory,)
-    {
+    public function __construct(
+        Container $container,
+        private readonly FilterFactory $filterFactory,
+    ) {
         parent::__construct($container);
     }
 
@@ -43,7 +45,7 @@ class Filters extends AbstractController
         /** @var CategoryFilter[] $filters */
         $filters = $em->getRepository(CategoryFilter::class)->findBy([
             'category' => $this->request->getQueryParams()['category'] ?? throw new \InvalidArgumentException(
-                    sprintf('Category id not sent')
+                    'Category id not sent'
                 )
         ], ['order' => 'asc']);
 

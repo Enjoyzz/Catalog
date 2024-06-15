@@ -6,11 +6,8 @@ declare(strict_types=1);
 namespace EnjoysCMS\Module\Catalog\Admin\Currency;
 
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Exception\NotSupported;
-use Doctrine\ORM\Exception\ORMException;
-use Doctrine\ORM\OptimisticLockException;
 use Enjoys\Forms\Exception\ExceptionRule;
 use Enjoys\Forms\Form;
 use Enjoys\Forms\Rules;
@@ -26,11 +23,9 @@ final class Delete
     private EntityRepository $repository;
     private CurrencyRateRepository|EntityRepository $rateRepository;
 
-    /**
-     * @throws NotSupported
-     */
+
     public function __construct(
-        private readonly EntityManager $entityManager,
+        private readonly EntityManagerInterface $entityManager,
         private readonly ServerRequestInterface $request,
     ) {
         $currencyId = $this->request->getQueryParams()['id']
@@ -66,11 +61,6 @@ final class Delete
         return $form;
     }
 
-
-    /**
-     * @throws OptimisticLockException
-     * @throws ORMException
-     */
     public function doAction(): void
     {
         $this->rateRepository->removeAllRatesByCurrency($this->currency);
