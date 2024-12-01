@@ -16,7 +16,7 @@ final class ProductDimensions
     #[ORM\Column(type: 'integer')]
     private int $id;
 
-    #[ORM\OneToOne(inversedBy: 'dimensions', targetEntity: Product::class)]
+    #[ORM\OneToOne(inversedBy: 'dimensions', targetEntity: Product::class, cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(name: 'product_id', referencedColumnName: 'id')]
     private Product $product;
 
