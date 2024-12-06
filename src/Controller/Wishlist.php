@@ -10,7 +10,7 @@ use EnjoysCMS\Module\Catalog\Repository\WishlistRepository;
 use Exception;
 use Psr\Http\Message\ResponseInterface;
 
-#[Route('/catalog/wishlist', name: 'wishlist_', priority: 3)]
+#[Route('/catalog/wishlist', name: 'catalog_wishlist_', priority: 3)]
 class Wishlist extends AbstractController
 {
 
@@ -22,25 +22,50 @@ class Wishlist extends AbstractController
         return $this->json(json_encode($wishlist));
     }
 
+    #[Route(path: '/count', name: 'count')]
+    public function count(WishlistRepository $wishlistRepository, Identity $identity): ResponseInterface
+    {
+        return $this->json($wishlistRepository->count(['user' => $identity->getUser()]));
+    }
+
     /**
      * @throws Exception
      */
-    #[Route('/add', name: 'add')]
-    public function add(EntityManagerInterface $em, Identity $identity): ResponseInterface
+    #[Route('/add', name: 'add_or_remove')]
+    public function addOrRemove(EntityManagerInterface $em, WishlistRepository $wishlistRepository, \EnjoysCMS\Module\Catalog\Repository\Product $productRepository, Identity $identity): ResponseInterface
     {
         $user = $identity->getUser();
         $parsedBody = json_decode($this->request->getBody()->getContents());
-        $product = $this->getProduct($em, $parsedBody->productId ?? null);
+
+        try {
+            $product = $productRepository->find($parsedBody->productId ?? throw new \InvalidArgumentException());
+        }catch (\InvalidArgumentException) {
+            $product = null;
+        }
+
         if ($product === null) {
             return $this->json(['error' => true, 'message' => 'Invalid product id'], 400);
         }
+
+        $wishlistProduct = $wishlistRepository->findOneBy(['user' => $user, 'product' => $product]);
+
+        if ($wishlistProduct !== null) {
+            $em->remove($wishlistProduct);
+            $em->flush();
+            return $this->json(sprintf('%s удален из избранного', $product->getName()));
+        }
+
+        $wishlistProduct = new \EnjoysCMS\Module\Catalog\Entity\Wishlist();
+        $wishlistProduct->setCreatedAt(new \DateTimeImmutable());
+        $wishlistProduct->setUser($user);
+        $wishlistProduct->setProduct($product);
+        $wishlistProduct->setProductOptions([]);
+
+        $em->persist($wishlistProduct);
+        $em->flush();
+
+        return $this->json(sprintf('%s добавлен в избранное', $product->getName()));
+
     }
 
-    private function getProduct(EntityManagerInterface $em, ?string $id): ?\EnjoysCMS\Module\Catalog\Entity\Product
-    {
-        if ($id === null) {
-            return null;
-        }
-        return $em->getRepository(\EnjoysCMS\Module\Catalog\Entity\Product::class)->find($id);
-    }
 }
