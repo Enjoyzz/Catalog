@@ -97,10 +97,14 @@ class Product
     #[ORM\ManyToOne(targetEntity: ProductGroup::class, cascade: ['persist'], inversedBy: 'products')]
     private ?ProductGroup $group = null;
 
+
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: Wishlist::class)]
+    private Collection $wishlist;
+
     public function __construct(string $id = null)
     {
         $this->id = $id ?? Uuid::uuid7()->toString();
-
+        $this->wishlist = new ArrayCollection();
         $this->tags = new ArrayCollection();
         $this->images = new ArrayCollection();
         $this->options = new ArrayCollection();
@@ -318,15 +322,17 @@ class Product
 
     public function hasOption(int|string|OptionKey $optionKey): bool
     {
-        return count(array_filter(
-            $this->options->toArray(),
-            function ($item) use ($optionKey) {
-                if ($optionKey instanceof OptionKey) {
-                    return $item->getOptionKey()->getId() === $optionKey->getId();
-                }
-                return $item->getOptionKey()->getId() === $optionKey;
-            }
-        )) > 0;
+        return count(
+                array_filter(
+                    $this->options->toArray(),
+                    function ($item) use ($optionKey) {
+                        if ($optionKey instanceof OptionKey) {
+                            return $item->getOptionKey()->getId() === $optionKey->getId();
+                        }
+                        return $item->getOptionKey()->getId() === $optionKey;
+                    }
+                )
+            ) > 0;
     }
 
     public function clearOptions(): void
@@ -534,6 +540,16 @@ class Product
     public function setGroup(?ProductGroup $group): void
     {
         $this->group = $group;
+    }
+
+    public function getWishlist(): Collection
+    {
+        return $this->wishlist;
+    }
+
+    public function isWishlistNotEmpty(): bool
+    {
+        return !$this->wishlist->isEmpty();
     }
 
 }

@@ -12,9 +12,12 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Exception\NotSupported;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
+use Doctrine\ORM\Query;
+use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ObjectRepository;
+use EnjoysCMS\Core\Auth\Identity;
 use EnjoysCMS\Core\Breadcrumbs\BreadcrumbCollection;
 use EnjoysCMS\Core\Exception\NotFoundException;
 use EnjoysCMS\Core\Http\Response\RedirectInterface;
@@ -25,10 +28,10 @@ use EnjoysCMS\Module\Catalog\Entity\Category;
 use EnjoysCMS\Module\Catalog\Entity\OptionKey;
 use EnjoysCMS\Module\Catalog\Entity\Product;
 use EnjoysCMS\Module\Catalog\Entity\ProductPriceEntityListener;
+use EnjoysCMS\Module\Catalog\Entity\Wishlist;
 use EnjoysCMS\Module\Catalog\ORM\Doctrine\Functions\ConvertPrice;
 use EnjoysCMS\Module\Catalog\Repository;
 use EnjoysCMS\Module\Catalog\Service\Filters\FilterFactory;
-use GuzzleHttp\Psr7\Uri;
 use Invoker\Exception\InvocationException;
 use Invoker\Exception\NotCallableException;
 use Invoker\Exception\NotEnoughParametersException;
@@ -59,6 +62,7 @@ final class CategoryModel implements ModelInterface
         private readonly BreadcrumbCollection $breadcrumbs,
         private readonly RedirectInterface $redirect,
         private readonly FilterFactory $filterFactory,
+        private readonly Identity $identity,
         private readonly Config $config,
         private readonly Setting $setting,
     ) {
@@ -82,8 +86,10 @@ final class CategoryModel implements ModelInterface
             }, explode(',', $this->config->getGlobalExtraFields()))
         );
 
-$this->config->getGlobalExtraFields(); $this->config->getSearchOptionField();
-$this->config->getGlobalExtraFields(); $this->config->getSearchOptionField();
+        $this->config->getGlobalExtraFields();
+        $this->config->getSearchOptionField();
+        $this->config->getGlobalExtraFields();
+        $this->config->getSearchOptionField();
 
         foreach ($globalExtraFields as $globalExtraField) {
             $this->category->addExtraField($globalExtraField);
@@ -129,7 +135,6 @@ $this->config->getGlobalExtraFields(); $this->config->getSearchOptionField();
         $filtersQueryString = $this->request->getQueryParams()['filter'] ?? false;
         $usedFilters = [];
         if (!empty($filtersQueryString) && is_array($filtersQueryString)) {
-
             $usedFilters = $this->filterFactory->createFromQueryString($filtersQueryString);
 
             foreach ($usedFilters as $filter) {
@@ -152,6 +157,13 @@ $this->config->getGlobalExtraFields(); $this->config->getSearchOptionField();
         }
 
 
+        $qb->addSelect('w')
+            ->leftJoin('p.wishlist', 'w', Join::WITH, 'w.product = p.id and w.user = :user')
+            ->setParameter('user', $this->identity->getUser())
+
+        ;
+
+
         match ($this->config->getSortMode()) {
             'price.desc' => $qb->addOrderBy('converted_price', 'DESC'),
             'price.asc' => $qb->addOrderBy('converted_price', 'ASC'),
@@ -162,7 +174,7 @@ $this->config->getGlobalExtraFields(); $this->config->getSearchOptionField();
 
         $qb->setFirstResult($this->pagination->getOffset())->setMaxResults($this->pagination->getLimitItems());
 
-        $result = new Paginator($qb);
+        $result = new Paginator($qb->getQuery());
         $this->pagination->setTotalItems($result->count());
 
         if ($this->config->get('redirectCategoryToProductIfIsOne', false) && $this->pagination->getTotalItems() === 1) {
