@@ -35,6 +35,11 @@ class Wishlist extends AbstractController
     public function addOrRemove(EntityManagerInterface $em, WishlistRepository $wishlistRepository, \EnjoysCMS\Module\Catalog\Repository\Product $productRepository, Identity $identity): ResponseInterface
     {
         $user = $identity->getUser();
+
+        if ($user->isGuest()) {
+            return $this->json(['error' => true, 'message' => 'Для добавления товара в избранное - необходимо авторизоваться'], 400);
+        }
+
         $parsedBody = json_decode($this->request->getBody()->getContents());
 
         try {

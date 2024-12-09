@@ -98,13 +98,13 @@ class Product
     private ?ProductGroup $group = null;
 
 
-    #[ORM\OneToMany(mappedBy: 'product', targetEntity: Wishlist::class)]
-    private Collection $wishlist;
+    #[ORM\OneToOne(mappedBy: 'product', targetEntity: Wishlist::class)]
+    private ?Wishlist $wishlist = null;
 
     public function __construct(string $id = null)
     {
         $this->id = $id ?? Uuid::uuid7()->toString();
-        $this->wishlist = new ArrayCollection();
+      //  $this->wishlist = new ArrayCollection();
         $this->tags = new ArrayCollection();
         $this->images = new ArrayCollection();
         $this->options = new ArrayCollection();
@@ -542,14 +542,14 @@ class Product
         $this->group = $group;
     }
 
-    public function getWishlist(): Collection
+    public function getWishlist(): Wishlist
     {
         return $this->wishlist;
     }
 
     public function isWishlistNotEmpty(): bool
     {
-        return !$this->wishlist->isEmpty();
+        return $this->wishlist instanceof Wishlist;
     }
 
 }
