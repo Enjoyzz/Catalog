@@ -144,9 +144,11 @@
 
             <div class="card-header">
                 <h2 class="card-title">{{ title }}
+                    {% if productGroup.products.count > 0 %}
                     <a class="small text-dark"
                        href="{{ path('catalog/product', {"slug": productGroup.products|first.slug}) }}"><i
                             class="fas fa-external-link-alt"></i></a>
+                    {% endif %}
                     <small class="d-block">{{ subtitle }}</small>
                 </h2>
                 {% if product %}

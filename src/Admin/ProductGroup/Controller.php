@@ -19,6 +19,7 @@ use EnjoysCMS\Core\Routing\Annotation\Route;
 use EnjoysCMS\Module\Catalog\Admin\AdminController;
 use EnjoysCMS\Module\Catalog\Config;
 use EnjoysCMS\Module\Catalog\Entity\ProductGroup;
+use EnjoysCMS\Module\Catalog\Repository\ProductGroupRepository;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Routing\Requirement\Requirement;
 use Twig\Error\LoaderError;
@@ -92,10 +93,9 @@ final class Controller extends AdminController
         ],
         comment: 'Редактировать группу товаров (объединение карточек)'
     )]
-    public function edit(CreateUpdateProductGroupForm $createUpdateProductGroupForm): ResponseInterface
+    public function edit(CreateUpdateProductGroupForm $createUpdateProductGroupForm, ProductGroupRepository $productGroupRepository): ResponseInterface
     {
-        $repository = $this->em->getRepository(ProductGroup::class);
-        $productGroup = $repository->find(
+        $productGroup = $productGroupRepository->find(
             $this->request->getAttribute('group_id')
             ?? throw new \InvalidArgumentException(
             '`group_id` param is invalid or not exists'
