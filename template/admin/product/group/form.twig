@@ -131,6 +131,10 @@
                     return $container;
                 },
                 templateSelection: function (result) {
+                    if (result.grouped === true){
+
+                        return $('<s>[SKU: '+ result.sku +'] ' + result.title + '<s>');
+                    }
                     return result.text || '[SKU: '+ result.sku +'] ' + result.title;
                 }
             });

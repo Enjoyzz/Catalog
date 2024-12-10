@@ -95,6 +95,7 @@ class ProductController extends AbstractController
                     'sku' => $item->getSku(),
                     'vendor' => $item->getVendor()?->getName(),
                     'vendorCode' => $item->getVendorCode(),
+                    'grouped' => $item->isGrouped(),
                 ];
             }, iterator_to_array($result)),
             'total_count' => $result->count()
