@@ -91,7 +91,8 @@ final class Controller extends AdminController
 
         return $this->response(
             $this->twig->render(
-                $this->templatePath . '/product/group/form.twig', [
+                $this->templatePath . '/product/group/form.twig',
+                [
                     'form' => $rendererForm,
                     'title' => "Добавление новой группы товаров"
                 ]
@@ -118,8 +119,10 @@ final class Controller extends AdminController
         ],
         comment: 'Редактировать группу товаров (объединение карточек)'
     )]
-    public function edit(CreateUpdateProductGroupForm $createUpdateProductGroupForm, ProductGroupRepository $productGroupRepository): ResponseInterface
-    {
+    public function edit(
+        CreateUpdateProductGroupForm $createUpdateProductGroupForm,
+        ProductGroupRepository $productGroupRepository
+    ): ResponseInterface {
         $productGroup = $productGroupRepository->find(
             $this->request->getAttribute('group_id')
             ?? throw new \InvalidArgumentException(
@@ -138,10 +141,61 @@ final class Controller extends AdminController
 
         return $this->response(
             $this->twig->render(
-                $this->templatePath . '/product/group/form.twig', [
+                $this->templatePath . '/product/group/form.twig',
+                [
                     'form' => $rendererForm,
                     'productGroup' => $productGroup,
                     'title' => sprintf("Редактирование группы товаров: %s", $productGroup->getTitle())
+                ]
+            )
+        );
+    }
+
+    /**
+     * @throws SyntaxError
+     * @throws NotFoundException
+     * @throws RuntimeError
+     * @throws LoaderError
+     * @throws DependencyException
+     * @throws NoResultException
+     */
+    #[Route(
+        path: '/remove/{group_id}',
+        name: 'remove',
+        requirements: [
+            'group_id' => Requirement::UUID
+        ],
+        comment: 'Удалить группу товаров (объединение карточек)'
+    )]
+    public function remove(
+        RemoveProductGroupForm $removeProductGroupForm,
+        ProductGroupRepository $productGroupRepository
+    ): ResponseInterface {
+        $productGroup = $productGroupRepository->find(
+            $this->request->getAttribute('group_id')
+            ?? throw new \InvalidArgumentException(
+            '`group_id` param is invalid or not exists'
+        )
+        ) ?? throw new NoResultException();
+
+        $form = $removeProductGroupForm->getForm($productGroup);
+
+        if ($form->isSubmitted()) {
+            $productGroup->removeProducts();
+            $this->em->remove($productGroup);
+            $this->em->flush();
+            return $this->redirect->toRoute('@catalog_product_group_list');
+        }
+
+        $rendererForm = $this->adminConfig->getRendererForm($form);
+
+        return $this->response(
+            $this->twig->render(
+                $this->templatePath . '/product/group/form.twig',
+                [
+                    'form' => $rendererForm,
+                    'productGroup' => $productGroup,
+                    'title' => sprintf("Удаление группы товаров: %s", $productGroup->getTitle())
                 ]
             )
         );
@@ -188,7 +242,8 @@ final class Controller extends AdminController
 
         return $this->response(
             $this->twig->render(
-                $this->templatePath . '/product/group/form.twig', [
+                $this->templatePath . '/product/group/form.twig',
+                [
                     'form' => $rendererForm,
                     'title' => sprintf(
                         "Расширенная настройка параметров для группы товаров: %s",

@@ -71,7 +71,7 @@
                                 <a class="btn btn-sm btn-secondary"
                                    href="{{ path('@catalog_product_group_edit', {group_id: group.id}) }}">Редактировать</a>
                                 <a class="btn btn-sm btn-danger"
-                                   href="">Удалить</a>
+                                   href="{{ path('@catalog_product_group_remove', {group_id: group.id}) }}">Удалить</a>
                             </td>
                         </tr>
                     {% endfor %}
