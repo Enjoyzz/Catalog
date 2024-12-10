@@ -1,0 +1,35 @@
+{% extends '@a/layout.twig' %}
+{% block content %}
+    {% do asset('js', ['modules/admin/node_modules/bs-custom-file-input/dist/bs-custom-file-input.min.js']) %}
+    <script>
+        $(document).ready(function () {
+            bsCustomFileInput.init()
+        })
+    </script>
+
+    <section class="content">
+
+
+        <div class="card">
+
+            <div class="card-header">
+                <h2 class="card-title">Список брендов</h2>
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body">
+                <h2>В разработке</h2>
+            </div>
+            <!-- /.card-body -->
+        </div>
+        <!-- /.card -->
+
+    </section>
+
+    {% block additional %}
+    {% endblock %}
+
+{% endblock %}
+
+{% block scripts %}
+    {{ editorEmbedCode|raw }}
+{% endblock %}
