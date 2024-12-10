@@ -64,14 +64,39 @@ final class Controller extends AdminController
         );
     }
 
+    /**
+     * @throws ExceptionRule
+     * @throws ORMException
+     * @throws RuntimeError
+     * @throws DependencyException
+     * @throws LoaderError
+     * @throws OptimisticLockException
+     * @throws SyntaxError
+     * @throws NotFoundException
+     */
     #[Route(
         path: '/add',
         name: 'add',
         comment: 'Добавить новую группу товаров (объединение карточек)'
     )]
-    public function add(): ResponseInterface
+    public function add(CreateUpdateProductGroupForm $createUpdateProductGroupForm): ResponseInterface
     {
-        return $this->response('');
+        $form = $createUpdateProductGroupForm->getForm();
+
+        if ($form->isSubmitted()) {
+            $createUpdateProductGroupForm->doAction();
+            return $this->redirect->toRoute('@catalog_product_group_list');
+        }
+        $rendererForm = $this->adminConfig->getRendererForm($form);
+
+        return $this->response(
+            $this->twig->render(
+                $this->templatePath . '/product/group/form.twig', [
+                    'form' => $rendererForm,
+                    'title' => "Добавление новой группы товаров"
+                ]
+            )
+        );
     }
 
     /**

@@ -14,6 +14,7 @@ use EnjoysCMS\Module\Catalog\Entity\Product;
 use EnjoysCMS\Module\Catalog\Entity\ProductGroup;
 use EnjoysCMS\Module\Catalog\Entity\ProductGroupOption;
 use Psr\Http\Message\ServerRequestInterface;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 final class CreateUpdateProductGroupForm
@@ -94,8 +95,14 @@ final class CreateUpdateProductGroupForm
         $relationRepository = $this->em->getRepository(ProductGroupOption::class);
 
 
-        $productGroup = $productGroup ?? new ProductGroup();
+        if ($productGroup === null){
+            $productGroup = new ProductGroup();
+            $productGroup->setId(Uuid::uuid4());
+            $this->em->persist($productGroup);
+        }
+
         $productGroup->setTitle($this->request->getParsedBody()['title'] ?? null);
+
 
 
         $options = $this->em->getRepository(OptionKey::class)->findBy([
@@ -146,7 +153,7 @@ final class CreateUpdateProductGroupForm
             $productGroup->addProduct($product);
         }
 
-        $this->em->persist($productGroup);
+
         $this->em->flush();
     }
 }
