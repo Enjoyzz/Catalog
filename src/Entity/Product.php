@@ -527,7 +527,7 @@ class Product
         return $this->group;
     }
 
-    public function getGroupOptionValue()
+    public function getGroupOptionValue(): Collection
     {
         return $this->group->getOptions();
     }
@@ -535,6 +535,20 @@ class Product
     public function isGrouped(): bool
     {
         return !is_null($this->group);
+    }
+
+    public function hasGroupOptionProblems(): bool
+    {
+        if (!$this->isGrouped()){
+            return false;
+        }
+
+        foreach ($this->group->getOptions() as $option) {
+            if (!$this->hasOption($option->getOptionKey())){
+                return true;
+            }
+        }
+        return false;
     }
 
     public function setGroup(?ProductGroup $group): void
