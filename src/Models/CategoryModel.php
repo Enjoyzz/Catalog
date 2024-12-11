@@ -160,8 +160,10 @@ final class CategoryModel implements ModelInterface
             ->setParameter('user', $this->identity->getUser());
 
         /** Показывает товары не в наличии в самом конце списка */
-        $qb->addSelect('CASE WHEN (q.qty - q.reserve) > 0 THEN true ELSE false END as HIDDEN realQty');
-        $qb->addOrderBy('realQty', 'DESC');
+        if ($this->config->get('moveProductsOutOfStockToEnd', false)) {
+            $qb->addSelect('CASE WHEN (q.qty - q.reserve) > 0 THEN true ELSE false END as HIDDEN realQty');
+            $qb->addOrderBy('realQty', 'DESC');
+        }
 
         match ($this->config->getSortMode()) {
             'price.desc' => $qb->addOrderBy('converted_price', 'DESC'),
