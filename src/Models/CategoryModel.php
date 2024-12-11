@@ -12,7 +12,6 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Exception\NotSupported;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
-use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
@@ -28,7 +27,6 @@ use EnjoysCMS\Module\Catalog\Entity\Category;
 use EnjoysCMS\Module\Catalog\Entity\OptionKey;
 use EnjoysCMS\Module\Catalog\Entity\Product;
 use EnjoysCMS\Module\Catalog\Entity\ProductPriceEntityListener;
-use EnjoysCMS\Module\Catalog\Entity\Wishlist;
 use EnjoysCMS\Module\Catalog\ORM\Doctrine\Functions\ConvertPrice;
 use EnjoysCMS\Module\Catalog\Repository;
 use EnjoysCMS\Module\Catalog\Service\Filters\FilterFactory;
@@ -159,10 +157,11 @@ final class CategoryModel implements ModelInterface
 
         $qb->addSelect('w')
             ->leftJoin('p.wishlist', 'w', Join::WITH, 'w.product = p.id and w.user = :user')
-            ->setParameter('user', $this->identity->getUser())
+            ->setParameter('user', $this->identity->getUser());
 
-        ;
-
+        /** Показывает товары не в наличии в самом конце списка */
+        $qb->addSelect('CASE WHEN (q.qty - q.reserve) > 0 THEN true ELSE false END as HIDDEN realQty');
+        $qb->addOrderBy('realQty', 'DESC');
 
         match ($this->config->getSortMode()) {
             'price.desc' => $qb->addOrderBy('converted_price', 'DESC'),
