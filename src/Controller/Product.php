@@ -45,7 +45,7 @@ final class Product extends PublicController
             $template_path = __DIR__ . '/../../template/product.twig';
         }
 
-        return $this->responseText(
+        return $this->response(
             $this->twig->render(
                 $template_path,
                 $productModel->getContext(),

@@ -61,7 +61,7 @@ final class Category extends PublicController
             sprintf('Not found by slug: %s', $this->request->getAttribute('slug', ''))
         );
 
-        return $this->responseText(
+        return $this->response(
             $this->twig->render(
                 $category->getCustomTemplatePath() ?: $template_path,
                 $categoryModel->getContext()

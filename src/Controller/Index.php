@@ -57,7 +57,7 @@ final class Index extends PublicController
 
         $categories = $categoryRepository->getChildNodes(null, ['status' => true]);
 
-        return $this->responseText(
+        return $this->response(
             $this->twig->render(
                 $template_path,
                 [

@@ -28,7 +28,7 @@ use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 
 
-final class Compare extends AbstractController
+final class Compare extends PublicController
 {
 
     /**

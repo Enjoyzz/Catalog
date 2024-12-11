@@ -12,8 +12,6 @@ use DI\NotFoundException;
 use Doctrine\ORM\Exception\NotSupported;
 use EnjoysCMS\Core\Breadcrumbs\BreadcrumbCollection;
 use EnjoysCMS\Core\Pagination\Pagination;
-use EnjoysCMS\Core\Setting\Setting;
-use EnjoysCMS\Module\Catalog\Config;
 use EnjoysCMS\Module\Catalog\Entity\Category;
 use EnjoysCMS\Module\Catalog\Entity\Image;
 use EnjoysCMS\Module\Catalog\Entity\OptionKey;
@@ -24,7 +22,6 @@ use EnjoysCMS\Module\Catalog\Service\Search\SearchInterface;
 use Exception;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -33,7 +30,6 @@ use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Throwable;
-use Twig\Environment;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -51,18 +47,11 @@ final class Search extends PublicController
      * @throws DependencyException
      * @throws NotFoundException
      */
-    public function __construct(
-        ServerRequestInterface $request,
-        Environment $twig,
-        Config $config,
-        Setting $setting,
-        ResponseInterface $response,
-        Container $container
-    ) {
-        parent::__construct($request, $twig, $config, $setting, $response);
-
+    public function __construct(Container $container)
+    {
+        parent::__construct($container);
         $this->optionKeys = explode(',', $this->config->getSearchOptionField());
-        $this->searchClass = $container->get($config->get('searchClass', DefaultSearch::class));
+        $this->searchClass = $container->get($this->config->get('searchClass', DefaultSearch::class));
         $this->searchClass->setOptionKeys($this->optionKeys);
         $this->searchClass->setSearchQuery($this->getSearchQuery());
     }
