@@ -46,7 +46,7 @@ final class Config extends AbstractModuleConfig
      */
     private function fetchDbConfig(): array
     {
-        return   $this->em->getRepository(Setting::class)->findAllKeyVar();
+        return $this->em->getRepository(Setting::class)->findAllKeyVar();
     }
 
     public function getCurrentCurrencyCode(): string
@@ -98,6 +98,24 @@ final class Config extends AbstractModuleConfig
     }
 
 
+    public function getWishlistSortMode(): ?string
+    {
+        return $this->session->get('catalog')['wishlist_sort'] ?? $this->get(
+            'wishlist_sort'
+        );
+    }
+
+    public function setWishlistMode(string $mode = null): void
+    {
+        $this->session->set([
+            'catalog' => array_merge(
+                $this->session->get('catalog', []),
+                ['wishlist_sort' => $mode],
+            )
+        ]);
+    }
+
+
     public function getPerPage(): string
     {
         return (string)($this->session->get('catalog')['limitItems'] ?? $this->get(
@@ -119,6 +137,29 @@ final class Config extends AbstractModuleConfig
             'catalog' => array_merge(
                 $this->session->get('catalog', []),
                 ['limitItems' => $perpage],
+            )
+        ]);
+    }
+
+    public function getWishlistPerPage(): string
+    {
+        return (string)($this->session->get('catalog')['wishlistLimitItems'] ?? $this->get('wishlistLimitItems', 12));
+    }
+
+    public function setWishlistPerPage(string $perpage = null): void
+    {
+        $allowedPerPage = $this->get(
+            'allowedPerPage'
+        ) ?? throw new InvalidArgumentException('allowedPerPage not set');
+
+        if (!in_array((int)$perpage, $allowedPerPage, true)) {
+            return;
+        }
+
+        $this->session->set([
+            'catalog' => array_merge(
+                $this->session->get('catalog', []),
+                ['wishlistLimitItems' => $perpage],
             )
         ]);
     }

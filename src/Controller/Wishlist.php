@@ -4,12 +4,15 @@ namespace EnjoysCMS\Module\Catalog\Controller;
 
 use Countable;
 use DateTimeImmutable;
+use DI\Container;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use EnjoysCMS\Core\Auth\Identity;
 use EnjoysCMS\Core\Exception\NotFoundException;
 use EnjoysCMS\Core\Pagination\Pagination;
 use EnjoysCMS\Core\Routing\Annotation\Route;
+use EnjoysCMS\Module\Catalog\ORM\Doctrine\Functions\ConvertPrice;
 use EnjoysCMS\Module\Catalog\Repository\WishlistRepository;
 use Exception;
 use InvalidArgumentException;
@@ -23,13 +26,26 @@ use Twig\Error\SyntaxError;
 class Wishlist extends PublicController
 {
 
+    public function __construct(Container $container)
+    {
+        parent::__construct($container);
+        $mode = $this->request->getQueryParams()['sort'] ?? $this->request->getParsedBody()['sort'] ?? null;
+        if ($mode !== null) {
+            $this->config->setWishlistMode($mode);
+        }
+        $perpage = $this->request->getQueryParams()['perpage'] ?? $this->request->getParsedBody()['perpage'] ?? null;
+        if ($perpage !== null) {
+            $this->config->setWishlistPerPage($perpage);
+        }
+    }
+
     /**
      * @throws SyntaxError
      * @throws RuntimeError
      * @throws LoaderError
      * @throws NotFoundException
      */
-    #[Route(path: '@{page}', name: 'view', requirements: ['page' => '\d+'], defaults: ['page' => 1], methods: ['GET'])]
+    #[Route(path: '@{page}', name: 'view', requirements: ['page' => '\d+'], defaults: ['page' => 1])]
     public function view(
         WishlistRepository $wishlistRepository,
         Identity $identity
@@ -40,10 +56,28 @@ class Wishlist extends PublicController
         }
         $pagination = new Pagination(
             $this->request->getAttribute('page', 1),
-            $this->config->getPerPage()
+            $this->config->getWishlistPerPage()
         );
 
         $qb = $wishlistRepository->getAllProductsQueryBuilder($identity->getUser());
+
+        $qb->getEntityManager()->getConfiguration()->addCustomStringFunction('CONVERT_PRICE', ConvertPrice::class);
+
+        if (!in_array($qb->getEntityManager()->getConnection()->getDatabasePlatform()::class, [SqlitePlatform::class])) {
+            $qb->addSelect('CONVERT_PRICE(pr.price, pr.currency, :current_currency) as HIDDEN converted_price');
+            $qb->setParameter('current_currency', $this->config->getCurrentCurrencyCode());
+        } else {
+            $qb->addSelect('pr.price as HIDDEN converted_price');
+        }
+
+        match ($this->config->getWishlistSortMode()) {
+            'price.desc' => $qb->addOrderBy('converted_price', 'DESC'),
+            'price.asc' => $qb->addOrderBy('converted_price', 'ASC'),
+            'name.desc' => $qb->addOrderBy('p.name', 'DESC'),
+            'added.asc' => $qb->addOrderBy('w.createdAt', 'ASC'),
+             default => $qb->addOrderBy('w.createdAt', 'DESC'),
+        };
+
         $qb->setFirstResult($pagination->getOffset())
             ->setMaxResults(
                 $pagination->getLimitItems()
@@ -53,6 +87,8 @@ class Wishlist extends PublicController
         $result = new Paginator($qb->getQuery());
         $pagination->setTotalItems($result->count());
 
+        $this->breadcrumbs->add('catalog/index', 'Каталог');
+        $this->breadcrumbs->add('catalog_wishlist_view','Избранное');
 
         return $this->response(
             $this->twig->render(
