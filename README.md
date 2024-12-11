@@ -94,4 +94,5 @@ composer migrate
     - `productDescription`
     - `categoryDescription`
     - `categoryShortDescription`
+- `moveProductsOutOfStockToEnd` **bool** Показывает товары не в наличии в самом конце списка
 
