@@ -1,0 +1,25 @@
+<h1 style='color: red'>
+    Copy this file to &lt;project_dir&gt;/template/modules/catalog/wishlist.twig and there edit
+</h1>
+
+{% include module.path ~ '/template/_breadcrumbs.twig' %}
+
+
+<h1>Wishlist</h1>
+
+
+
+{% include module.path ~ '/template/_wishlist_pagination.twig' %}
+
+
+<div>
+    <h2>Продукты</h2>
+    <ul>
+        {% for wishlist in wishlists %}
+            <li>
+                <a href="{{ path("catalog/product", {"slug": wishlist.product.getSlug }) }}">{{ wishlist.product.getName }}</a>
+            <div>{{ wishlist.createdAt.format('d-m-Y H:i:s') }}</div>
+            </li>
+        {% endfor %}
+    </ul>
+</div>

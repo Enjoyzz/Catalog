@@ -1,0 +1,63 @@
+{% if pagination.isActive %}
+    <style>
+        ul.pagination li {
+            display: inline;
+        }
+    </style>
+    <h2>Pagination</h2>
+    <ul class="pagination">
+        <li>
+            <a{% if pagination.getPrevPage is not null %} href="{{ path("catalog_wishlist_view", {"page": pagination.getPrevPage }) }}"{% endif %}>
+                <span>&laquo;</span>
+            </a>
+        </li>
+        <li{% if 1 == pagination.getCurrentPage %} style="font-weight: bold;"{% endif %}>
+            <a href="{{ path("catalog_wishlist_view", {"page": 1 }) }}">
+                {{ 1 }}
+            </a>
+        </li>
+
+        {% set show_pages = 13 %}
+
+        {% set slice_start =  pagination.getCurrentPage - (show_pages/2|round(0, 'ceil') + 1) %}
+        {% if pagination.getTotalPages <= 2 %}
+            {% set slice = false %}
+        {% else %}
+            {% set slice = (2..pagination.getTotalPages-1)|slice((slice_start < 0) ? 0 : slice_start, show_pages) %}
+        {% endif %}
+
+        {% if slice != false %}
+
+            {% if slice_start > 0 %}
+                <li><span>&hellip;</span></li>
+            {% endif %}
+
+
+            {% for page in slice %}
+                <li{% if page == pagination.getCurrentPage %} style="font-weight: bold;"{% endif %}>
+                    <a href="{{ path("catalog_wishlist_view", {"page": page }) }}">
+                        {{ page }}
+                    </a>
+                </li>
+            {% endfor %}
+
+            {% if max(slice) + 1 != pagination.getTotalPages %}
+                <li><span>&hellip;</span></li>
+            {% endif %}
+
+        {% endif %}
+
+        <li{% if pagination.getTotalPages == pagination.getCurrentPage %}  style="font-weight: bold;"{% endif %}>
+            <a class="page-link"
+               href="{{ path("catalog_wishlist_view", {"page": pagination.getTotalPages }) }}">
+                {{ pagination.getTotalPages }}
+            </a>
+        </li>
+        <li>
+
+            <a {% if pagination.getNextPage is not null %} href="{{ path("catalog_wishlist_view", {"page": pagination.getNextPage }) }}" {% endif %}>
+                <span>&raquo;</span>
+            </a>
+        </li>
+    </ul>
+{% endif %}
