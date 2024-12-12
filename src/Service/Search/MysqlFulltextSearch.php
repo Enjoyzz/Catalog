@@ -16,7 +16,7 @@ final class MysqlFulltextSearch implements SearchInterface
 {
 
     private \EnjoysCMS\Module\Catalog\Repository\Product|EntityRepository $productRepository;
-    private ?string $searchQuery = null;
+    private SearchQuery $searchQuery;
     private array $optionKeys = [];
 
 
@@ -28,15 +28,12 @@ final class MysqlFulltextSearch implements SearchInterface
         $this->productRepository = $this->em->getRepository(Product::class);
     }
 
-    public function setSearchQuery(string $searchQuery): void
+
+    public function setSearchQuery(SearchQuery $searchQuery): void
     {
         $this->searchQuery = $searchQuery;
     }
 
-    public function setOptionKeys(array $optionKeys): void
-    {
-        $this->optionKeys = $optionKeys;
-    }
 
     /**
      * @throws \Exception
@@ -55,10 +52,8 @@ final class MysqlFulltextSearch implements SearchInterface
         $result = new Paginator($qb);
 
         return new SearchResult(
-            searchQuery: $this->searchQuery,
-            countResult: $result->count(),
-            optionKeys: $this->optionKeys,
-            result: $result
+            $this->searchQuery,
+            $result
         );
     }
 

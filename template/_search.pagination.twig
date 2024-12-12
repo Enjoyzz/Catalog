@@ -12,14 +12,14 @@
         <ul>
             {% if pagination.getPrevPage is not null %}
                 <li>
-                    <a href="{{ path("catalog/search", {"q": searchQuery, "page": pagination.getPrevPage }) }}">
+                    <a href="{{ path("catalog/search", {"q": query, "page": pagination.getPrevPage }) }}">
                         <span>Назад</span>
                     </a>
                 </li>
             {% endif %}
             <li>
                 <a{% if 1 == pagination.getCurrentPage %} class="active"{% endif %}
-                    href="{{ path("catalog/search", {"q": searchQuery, "page": 1 }) }}">
+                    href="{{ path("catalog/search", {"q": query, "page": 1 }) }}">
                     {{ 1 }}
                 </a>
             </li>
@@ -43,7 +43,7 @@
                 {% for page in slice %}
                     <li>
                         <a{% if page == pagination.getCurrentPage %} class="active"{% endif %}
-                            href="{{ path("catalog/search", {"q": searchQuery, "page": page }) }}">
+                            href="{{ path("catalog/search", {"q": query, "page": page }) }}">
                             {{ page }}
                         </a>
                     </li>
@@ -57,13 +57,13 @@
 
             <li>
                 <a{% if pagination.getTotalPages == pagination.getCurrentPage %} class="active"{% endif %}
-                    href="{{ path("catalog/search", {"q": searchQuery, "page": pagination.getTotalPages }) }}">
+                    href="{{ path("catalog/search", {"q": query, "page": pagination.getTotalPages }) }}">
                     {{ pagination.getTotalPages }}
                 </a>
             </li>
             {% if pagination.getNextPage is not null %}
                 <li>
-                    <a href="{{ path("catalog/search", {"q": searchQuery, "page": pagination.getNextPage }) }}">
+                    <a href="{{ path("catalog/search", {"q": query, "page": pagination.getNextPage }) }}">
                         <span>Далее</span>
                     </a>
                 </li>

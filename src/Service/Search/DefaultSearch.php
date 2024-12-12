@@ -4,49 +4,50 @@ declare(strict_types=1);
 
 namespace EnjoysCMS\Module\Catalog\Service\Search;
 
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
-use EnjoysCMS\Module\Catalog\Entity\Product;
+use EnjoysCMS\Module\Catalog\Repository\Product;
+use Exception;
 
 final class DefaultSearch implements SearchInterface
 {
 
-    private \EnjoysCMS\Module\Catalog\Repository\Product|EntityRepository $productRepository;
-    private ?string $searchQuery = null;
-    private array $optionKeys = [];
+    private ?array $errors = null;
 
+    private SearchQuery $searchQuery;
 
     public function __construct(
-        private EntityManager $em
+        private readonly Product $productRepository
     ) {
-        $this->productRepository = $this->em->getRepository(Product::class);
     }
 
-    public function setSearchQuery(string $searchQuery): void
+    public function setSearchQuery(SearchQuery $searchQuery): void
     {
         $this->searchQuery = $searchQuery;
     }
 
-    public function setOptionKeys(array $optionKeys): void
+    public function setErrors(array $errors = null): void
     {
-        $this->optionKeys = $optionKeys;
+        $this->errors = $errors;
+    }
+
+    public function getErrors(): ?array
+    {
+        return $this->errors;
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function getResult(int $offset, int $limit): SearchResult
     {
-        if ($this->searchQuery === null) {
-            throw new \InvalidArgumentException('Not set searchQuery (SearchInterface::setSearchQuery())');
-        }
-
-        $result = new Paginator(
+        $products = new Paginator(
             $this
-                ->getFoundProductsQueryBuilder($this->searchQuery, $this->optionKeys)
+                ->getFoundProductsQueryBuilder(
+                    $this->searchQuery->query,
+                    $this->searchQuery->optionKeys
+                )
                 ->setFirstResult($offset)
                 ->setMaxResults($limit)
         );
@@ -54,9 +55,7 @@ final class DefaultSearch implements SearchInterface
 
         return new SearchResult(
             searchQuery: $this->searchQuery,
-            countResult: $result->count(),
-            optionKeys: $this->optionKeys,
-            result: $result->getIterator()->getArrayCopy()
+            products: $products
         );
     }
 
@@ -81,6 +80,8 @@ final class DefaultSearch implements SearchInterface
             ])//
             ;
     }
+
+
 
 
 }

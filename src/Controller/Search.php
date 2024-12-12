@@ -19,6 +19,8 @@ use EnjoysCMS\Module\Catalog\Entity\OptionValue;
 use EnjoysCMS\Module\Catalog\Entity\Product;
 use EnjoysCMS\Module\Catalog\Service\Search\DefaultSearch;
 use EnjoysCMS\Module\Catalog\Service\Search\SearchInterface;
+use EnjoysCMS\Module\Catalog\Service\Search\SearchQuery;
+use EnjoysCMS\Module\Catalog\Service\Search\SearchResult;
 use Exception;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
@@ -39,7 +41,10 @@ use function trim;
 final class Search extends PublicController
 {
     private array $optionKeys;
-    private SearchInterface $searchClass;
+
+    private SearchInterface $search;
+
+    private SearchQuery $searchQuery;
 
 
     /**
@@ -51,16 +56,16 @@ final class Search extends PublicController
     {
         parent::__construct($container);
         $this->optionKeys = explode(',', $this->config->getSearchOptionField());
-        $this->searchClass = $container->get($this->config->get('searchClass', DefaultSearch::class));
-        $this->searchClass->setOptionKeys($this->optionKeys);
-        $this->searchClass->setSearchQuery($this->getSearchQuery());
+        $this->search = $container->get($this->config->get('searchClass', DefaultSearch::class));
+        $this->searchQuery = new SearchQuery($this->normalizeQuery(), $this->optionKeys);
+        $this->search->setSearchQuery($this->searchQuery);
     }
 
-    private function getSearchQuery(): string
+    private function normalizeQuery(): string
     {
-        $searchQuery = trim($this->request->getQueryParams()['q'] ?? $this->request->getParsedBody()['q'] ?? '');
+        $query = trim($this->request->getQueryParams()['q'] ?? $this->request->getParsedBody()['q'] ?? '');
 
-        if (mb_strlen($searchQuery) < $this->config->get('minSearchChars', 3)) {
+        if (mb_strlen($query) < $this->config->get('minSearchChars', 3)) {
             throw new InvalidArgumentException(
                 sprintf(
                     'Слишком короткое слово для поиска (нужно минимум %s символа)',
@@ -69,7 +74,7 @@ final class Search extends PublicController
             );
         }
 
-        return $searchQuery;
+        return $query;
     }
 
 
@@ -79,6 +84,8 @@ final class Search extends PublicController
     )]
     public function apiSearch(): ResponseInterface
     {
+
+
         $serializer = new Serializer(
             normalizers: [new ObjectNormalizer()],
             encoders: [new JsonEncoder()]
@@ -88,9 +95,9 @@ final class Search extends PublicController
             $pagination = new Pagination(
                 $this->request->getQueryParams()['page'] ?? 1, $this->config->get('limitItems', 30)
             );
-            $searchResult = $this->searchClass->getResult($pagination->getOffset(), $pagination->getLimitItems());
+            $searchResult = $this->search->getResult($pagination->getOffset(), $pagination->getLimitItems());
 
-            $response = $this->responseJson(
+            $response = $this->json(
                 $serializer->normalize(
                     $searchResult,
                     JsonEncoder::FORMAT,
@@ -157,7 +164,7 @@ final class Search extends PublicController
                 )
             );
         } catch (Exception|Throwable $e) {
-            $response = $this->responseJson(['error' => $e->getMessage()]);
+            $response = $this->json(['error' => $e->getMessage()]);
         } finally {
             return $response;
         }
@@ -182,12 +189,10 @@ final class Search extends PublicController
         );
 
         try {
-            $searchResult = $this->searchClass->getResult($pagination->getOffset(), $pagination->getLimitItems());
-            $pagination->setTotalItems($searchResult->getCountResult());
-        } catch (Throwable $e) {
-            $searchResult = [
-                'error' => $e
-            ];
+            $result = $this->search->getResult($pagination->getOffset(), $pagination->getLimitItems());
+            $pagination->setTotalItems($result->getProducts()->count());
+        } catch (Throwable $e){
+            $this->search->setErrors([$e]);
         }
 
         $breadcrumbs->add($urlGenerator->generate('catalog/index'), 'Каталог');
@@ -199,10 +204,12 @@ final class Search extends PublicController
             $template_path = __DIR__ . '/../../template/search.twig';
         }
 
-        return $this->responseText(
+        return $this->response(
             $this->twig->render($template_path, [
                 'pagination' => $pagination,
-                'searchResult' => $searchResult,
+                'errors' => $this->search->getErrors(),
+                'searchQuery' => $this->searchQuery,
+                'result' => $result,
                 'breadcrumbs' => $breadcrumbs
             ])
         );

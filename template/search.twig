@@ -3,22 +3,31 @@
 </h1>
 {% include module.path ~ '/template/_breadcrumbs.twig' %}
 
-{% if result.error %}
+
+<form><input type="text" name="q" value="{{ _request.queryParams.q }}"><input type="submit"></form>
+
+{% if search.error %}
     <h1 style='color: red'>
-            {{ searchResult.error.getMessage }}
+        {{ search.error.getMessage }}
     </h1>
+{% else %}
+    <h2>Искали: {{ searchQuery.query }}</h2>
+
+
+    {% include module.path ~ '/template/_search.pagination.twig' with {'query': searchQuery.query} %}
+
+    {% if result.products.count > 0 %}
+
+        <h2>Найдено: {{ result.products.count }}</h2>
+
+        <div>
+            <h2>Найденные товары</h2>
+            <ul>
+                {% for product in result.products %}
+                    <li><a href="{{ path("catalog/product", {"slug": product.getSlug }) }}">{{ product.getName }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
 {% endif %}
-<h2>Искали: {{  searchResult.searchQuery }}</h2>
-<h2>Найдено: {{  searchResult.countResult }}</h2>
-
-{% include module.path ~ '/template/_search.pagination.twig' with {'searchQuery': searchResult.searchQuery} %}
-
-
-<div>
-    <h2>Найденные товары</h2>
-    <ul>
-        {% for product in searchResult.result %}
-            <li><a href="{{ path("catalog/product", {"slug": product.getSlug }) }}">{{ product.getName }}</a></li>
-        {% endfor %}
-    </ul>
-</div>
