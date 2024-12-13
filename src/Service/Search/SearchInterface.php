@@ -9,9 +9,7 @@ namespace EnjoysCMS\Module\Catalog\Service\Search;
 interface SearchInterface
 {
 
-    public function setSearchQuery(SearchQuery $searchQuery): void;
-
-    public function getResult(int $offset, int $limit): SearchResult;
+    public function getResult(SearchQuery $searchQuery, int $offset, int $limit): SearchResult;
 
     public function setError(string $error = null): void;
 

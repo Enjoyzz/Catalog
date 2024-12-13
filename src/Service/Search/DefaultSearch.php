@@ -15,17 +15,11 @@ final class DefaultSearch implements SearchInterface
 
     private ?string $error = null;
 
-    private SearchQuery $searchQuery;
-
     public function __construct(
         private readonly Product $productRepository
     ) {
     }
 
-    public function setSearchQuery(SearchQuery $searchQuery): void
-    {
-        $this->searchQuery = $searchQuery;
-    }
 
     public function setError(string $error = null): void
     {
@@ -40,13 +34,13 @@ final class DefaultSearch implements SearchInterface
     /**
      * @throws Exception
      */
-    public function getResult(int $offset, int $limit): SearchResult
+    public function getResult(SearchQuery $searchQuery, int $offset, int $limit): SearchResult
     {
         $products = new Paginator(
             $this
                 ->getFoundProductsQueryBuilder(
-                    $this->searchQuery->query,
-                    $this->searchQuery->optionKeys
+                    $searchQuery->query,
+                    $searchQuery->optionKeys
                 )
                 ->setFirstResult($offset)
                 ->setMaxResults($limit)
@@ -54,7 +48,7 @@ final class DefaultSearch implements SearchInterface
 
 
         return new SearchResult(
-            searchQuery: $this->searchQuery,
+            searchQuery: $searchQuery,
             products: $products
         );
     }

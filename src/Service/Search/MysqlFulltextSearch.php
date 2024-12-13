@@ -17,12 +17,6 @@ final class MysqlFulltextSearch implements SearchInterface
 
     private ?string $error = null;
 
-    private SearchQuery $searchQuery;
-
-
-    /**
-     * @param \EnjoysCMS\Module\Catalog\Repository\Product&EntityRepository $productRepository
-     */
     public function __construct(
         private readonly \EnjoysCMS\Module\Catalog\Repository\Product $productRepository
     )
@@ -31,30 +25,22 @@ final class MysqlFulltextSearch implements SearchInterface
     }
 
 
-    public function setSearchQuery(SearchQuery $searchQuery): void
-    {
-        $this->searchQuery = $searchQuery;
-    }
-
 
     /**
      * @throws \Exception
      */
-    public function getResult(int $offset, int $limit): SearchResult
+    public function getResult(SearchQuery $searchQuery, int $offset, int $limit): SearchResult
     {
-//        if ($this->searchQuery === null) {
-//            throw new \InvalidArgumentException('Not set searchQuery (SearchInterface::setSearchQuery())');
-//        }
 
         $qb = $this
-            ->getFoundProductsQueryBuilder($this->searchQuery->query, $this->searchQuery->optionKeys)
+            ->getFoundProductsQueryBuilder($searchQuery->query, $searchQuery->optionKeys)
             ->setFirstResult($offset)
             ->setMaxResults($limit);
 
         $products = new Paginator($qb);
 
         return new SearchResult(
-            $this->searchQuery,
+            $searchQuery,
             products: $products
         );
     }

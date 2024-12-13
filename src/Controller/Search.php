@@ -96,7 +96,7 @@ final class Search extends PublicController
         try {
 
             $this->searchQuery = new SearchQuery($this->normalizeQuery(), $this->optionKeys);
-            $this->search->setSearchQuery($this->searchQuery);
+           // $this->search->setSearchQuery($this->searchQuery);
 
             $searchResult = $this->search->getResult($pagination->getOffset(), $pagination->getLimitItems());
 
@@ -193,9 +193,8 @@ final class Search extends PublicController
 
         try {
             $this->searchQuery = new SearchQuery($this->normalizeQuery(), $this->optionKeys);
-            $this->search->setSearchQuery($this->searchQuery);
 
-            $result = $this->search->getResult($pagination->getOffset(), $pagination->getLimitItems());
+            $result = $this->search->getResult($this->searchQuery, $pagination->getOffset(), $pagination->getLimitItems());
             $pagination->setTotalItems($result->getProducts()->count());
         } catch (Throwable $e){
             $this->search->setError($e->getMessage());
