@@ -1,14 +1,17 @@
 <h1 style='color: red'>
     Copy this file to &lt;project_dir&gt;/template/modules/catalog/search.twig and there edit
 </h1>
+
+<h1>SEARCH CLASS: {{ searchClass }}</h1>
+
 {% include module.path ~ '/template/_breadcrumbs.twig' %}
 
 
 <form><input type="text" name="q" value="{{ _request.queryParams.q }}"><input type="submit"></form>
 
-{% if search.error %}
+{% if error %}
     <h1 style='color: red'>
-        {{ search.error.getMessage }}
+        {{ error }}
     </h1>
 {% else %}
     <h2>Искали: {{ searchQuery.query }}</h2>

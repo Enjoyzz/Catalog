@@ -57,8 +57,6 @@ final class Search extends PublicController
         parent::__construct($container);
         $this->optionKeys = explode(',', $this->config->getSearchOptionField());
         $this->search = $container->get($this->config->get('searchClass', DefaultSearch::class));
-        $this->searchQuery = new SearchQuery($this->normalizeQuery(), $this->optionKeys);
-        $this->search->setSearchQuery($this->searchQuery);
     }
 
     private function normalizeQuery(): string
@@ -91,10 +89,15 @@ final class Search extends PublicController
             encoders: [new JsonEncoder()]
         );
 
+        $pagination = new Pagination(
+            $this->request->getQueryParams()['page'] ?? 1, $this->config->get('limitItems', 30)
+        );
+
         try {
-            $pagination = new Pagination(
-                $this->request->getQueryParams()['page'] ?? 1, $this->config->get('limitItems', 30)
-            );
+
+            $this->searchQuery = new SearchQuery($this->normalizeQuery(), $this->optionKeys);
+            $this->search->setSearchQuery($this->searchQuery);
+
             $searchResult = $this->search->getResult($pagination->getOffset(), $pagination->getLimitItems());
 
             $response = $this->json(
@@ -189,10 +192,13 @@ final class Search extends PublicController
         );
 
         try {
+            $this->searchQuery = new SearchQuery($this->normalizeQuery(), $this->optionKeys);
+            $this->search->setSearchQuery($this->searchQuery);
+
             $result = $this->search->getResult($pagination->getOffset(), $pagination->getLimitItems());
             $pagination->setTotalItems($result->getProducts()->count());
         } catch (Throwable $e){
-            $this->search->setErrors([$e]);
+            $this->search->setError($e->getMessage());
         }
 
         $breadcrumbs->add($urlGenerator->generate('catalog/index'), 'Каталог');
@@ -207,9 +213,10 @@ final class Search extends PublicController
         return $this->response(
             $this->twig->render($template_path, [
                 'pagination' => $pagination,
-                'errors' => $this->search->getErrors(),
-                'searchQuery' => $this->searchQuery,
-                'result' => $result,
+                'error' => $this->search->getError(),
+                'searchClass' => get_debug_type($this->search),
+                'searchQuery' => $this->searchQuery ?? null,
+                'result' => $result ?? null,
                 'breadcrumbs' => $breadcrumbs
             ])
         );

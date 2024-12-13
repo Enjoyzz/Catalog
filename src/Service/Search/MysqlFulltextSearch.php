@@ -15,17 +15,19 @@ use EnjoysCMS\Module\Catalog\Entity\Product;
 final class MysqlFulltextSearch implements SearchInterface
 {
 
-    private \EnjoysCMS\Module\Catalog\Repository\Product|EntityRepository $productRepository;
+    private ?string $error = null;
+
     private SearchQuery $searchQuery;
-    private array $optionKeys = [];
 
 
+    /**
+     * @param \EnjoysCMS\Module\Catalog\Repository\Product&EntityRepository $productRepository
+     */
     public function __construct(
-        private EntityManager $em
+        private readonly \EnjoysCMS\Module\Catalog\Repository\Product $productRepository
     )
     {
-        $this->em->getConfiguration()->addCustomStringFunction('MATCH', MatchAgainst::class);
-        $this->productRepository = $this->em->getRepository(Product::class);
+        $productRepository->getEntityManager()->getConfiguration()->addCustomStringFunction('MATCH', MatchAgainst::class);
     }
 
 
@@ -40,21 +42,31 @@ final class MysqlFulltextSearch implements SearchInterface
      */
     public function getResult(int $offset, int $limit): SearchResult
     {
-        if ($this->searchQuery === null) {
-            throw new \InvalidArgumentException('Not set searchQuery (SearchInterface::setSearchQuery())');
-        }
+//        if ($this->searchQuery === null) {
+//            throw new \InvalidArgumentException('Not set searchQuery (SearchInterface::setSearchQuery())');
+//        }
 
         $qb = $this
-            ->getFoundProductsQueryBuilder($this->searchQuery, $this->optionKeys)
+            ->getFoundProductsQueryBuilder($this->searchQuery->query, $this->searchQuery->optionKeys)
             ->setFirstResult($offset)
             ->setMaxResults($limit);
 
-        $result = new Paginator($qb);
+        $products = new Paginator($qb);
 
         return new SearchResult(
             $this->searchQuery,
-            $result
+            products: $products
         );
+    }
+
+    public function setError(string $error = null): void
+    {
+        $this->error = $error;
+    }
+
+    public function getError(): ?string
+    {
+        return $this->error;
     }
 
 

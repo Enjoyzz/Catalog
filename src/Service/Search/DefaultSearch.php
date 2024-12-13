@@ -13,7 +13,7 @@ use Exception;
 final class DefaultSearch implements SearchInterface
 {
 
-    private ?array $errors = null;
+    private ?string $error = null;
 
     private SearchQuery $searchQuery;
 
@@ -27,14 +27,14 @@ final class DefaultSearch implements SearchInterface
         $this->searchQuery = $searchQuery;
     }
 
-    public function setErrors(array $errors = null): void
+    public function setError(string $error = null): void
     {
-        $this->errors = $errors;
+        $this->error = $error;
     }
 
-    public function getErrors(): ?array
+    public function getError(): ?string
     {
-        return $this->errors;
+        return $this->error;
     }
 
     /**
