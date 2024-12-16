@@ -10,7 +10,6 @@ use DI\Container;
 use DI\DependencyException;
 use DI\NotFoundException;
 use Doctrine\ORM\Exception\NotSupported;
-use EnjoysCMS\Core\Breadcrumbs\BreadcrumbCollection;
 use EnjoysCMS\Core\Pagination\Pagination;
 use EnjoysCMS\Module\Catalog\Entity\Category;
 use EnjoysCMS\Module\Catalog\Entity\Image;
@@ -20,12 +19,10 @@ use EnjoysCMS\Module\Catalog\Entity\Product;
 use EnjoysCMS\Module\Catalog\Service\Search\DefaultSearch;
 use EnjoysCMS\Module\Catalog\Service\Search\SearchInterface;
 use EnjoysCMS\Module\Catalog\Service\Search\SearchQuery;
-use EnjoysCMS\Module\Catalog\Service\Search\SearchResult;
 use Exception;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
@@ -82,8 +79,6 @@ final class Search extends PublicController
     )]
     public function apiSearch(): ResponseInterface
     {
-
-
         $serializer = new Serializer(
             normalizers: [new ObjectNormalizer()],
             encoders: [new JsonEncoder()]
@@ -94,9 +89,8 @@ final class Search extends PublicController
         );
 
         try {
-
             $this->searchQuery = new SearchQuery($this->normalizeQuery(), $this->optionKeys);
-           // $this->search->setSearchQuery($this->searchQuery);
+            // $this->search->setSearchQuery($this->searchQuery);
 
             $searchResult = $this->search->getResult($pagination->getOffset(), $pagination->getLimitItems());
 
@@ -183,10 +177,8 @@ final class Search extends PublicController
         name: 'catalog/search',
         priority: 2
     )]
-    public function search(
-        BreadcrumbCollection $breadcrumbs,
-        UrlGeneratorInterface $urlGenerator
-    ): ResponseInterface {
+    public function search(): ResponseInterface
+    {
         $pagination = new Pagination(
             $this->request->getQueryParams()['page'] ?? 1, $this->config->get('limitItems', 30)
         );
@@ -194,20 +186,24 @@ final class Search extends PublicController
         try {
             $this->searchQuery = new SearchQuery($this->normalizeQuery(), $this->optionKeys);
 
-            $result = $this->search->getResult($this->searchQuery, $pagination->getOffset(), $pagination->getLimitItems());
+            $result = $this->search->getResult(
+                $this->searchQuery,
+                $pagination->getOffset(),
+                $pagination->getLimitItems()
+            );
             $pagination->setTotalItems($result->getProducts()->count());
-        } catch (Throwable $e){
+        } catch (Throwable $e) {
             $this->search->setError($e->getMessage());
         }
-
-        $breadcrumbs->add($urlGenerator->generate('catalog/index'), 'Каталог');
-        $breadcrumbs->setLastBreadcrumb('Поиск');
 
         $template_path = '@m/catalog/search.twig';
 
         if (!$this->twig->getLoader()->exists($template_path)) {
             $template_path = __DIR__ . '/../../template/search.twig';
         }
+
+        $this->breadcrumbs->add('catalog/index', 'Каталог');
+        $this->breadcrumbs->add('catalog/search', 'Поиск');
 
         return $this->response(
             $this->twig->render($template_path, [
@@ -216,7 +212,7 @@ final class Search extends PublicController
                 'searchClass' => get_debug_type($this->search),
                 'searchQuery' => $this->searchQuery ?? null,
                 'result' => $result ?? null,
-                'breadcrumbs' => $breadcrumbs
+                'breadcrumbs' => $this->breadcrumbs,
             ])
         );
     }
