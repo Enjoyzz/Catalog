@@ -184,7 +184,11 @@ final class Search extends PublicController
         );
 
         try {
-            $this->searchQuery = new SearchQuery($this->normalizeQuery(), $this->optionKeys);
+            $this->searchQuery = new SearchQuery(
+                query: $this->normalizeQuery(),
+                optionKeys: $this->optionKeys,
+                category: $this->request->getQueryParams()['category'] ?? null,
+            );
 
             $result = $this->search->getResult(
                 $this->searchQuery,

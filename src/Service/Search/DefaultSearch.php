@@ -7,6 +7,7 @@ namespace EnjoysCMS\Module\Catalog\Service\Search;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
+use EnjoysCMS\Module\Catalog\Repository\Category;
 use EnjoysCMS\Module\Catalog\Repository\Product;
 use Exception;
 
@@ -16,7 +17,8 @@ final class DefaultSearch implements SearchInterface
     private ?string $error = null;
 
     public function __construct(
-        private readonly Product $productRepository
+        private readonly Product $productRepository,
+        private readonly Category $categoryRepository,
     ) {
     }
 
@@ -40,7 +42,8 @@ final class DefaultSearch implements SearchInterface
             $this
                 ->getFoundProductsQueryBuilder(
                     $searchQuery->query,
-                    $searchQuery->optionKeys
+                    $searchQuery->optionKeys,
+                    $searchQuery->getCategory()
                 )
                 ->setFirstResult($offset)
                 ->setMaxResults($limit)
@@ -54,9 +57,12 @@ final class DefaultSearch implements SearchInterface
     }
 
 
-    private function getFoundProductsQueryBuilder(string $searchQuery, array $optionKeys = []): QueryBuilder
-    {
-        return $this->productRepository->createQueryBuilder('p')
+    private function getFoundProductsQueryBuilder(
+        string $searchQuery,
+        array $optionKeys = [],
+        ?string $category = null
+    ): QueryBuilder {
+        $qb = $this->productRepository->createQueryBuilder('p')
             ->select('p', 'm', 'u', 'ov', 'c')
             ->leftJoin('p.meta', 'm')
             ->leftJoin('p.urls', 'u')
@@ -72,10 +78,16 @@ final class DefaultSearch implements SearchInterface
                 'key' => $optionKeys,
                 'option' => '%' . $searchQuery . '%'
             ])//
-            ;
+        ;
+
+//        dd($this->categoryRepository->getAllIds($this->categoryRepository->find($category)));
+//        dd($category)
+        if ($category !== null) {
+            $qb->andWhere('p.category IN (:ids)')
+                ->setParameter('ids', $this->categoryRepository->getAllIds($this->categoryRepository->find($category)));
+        }
+        return $qb;
     }
-
-
 
 
 }
