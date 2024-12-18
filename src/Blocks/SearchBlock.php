@@ -19,6 +19,7 @@ use Enjoys\Forms\Rules;
 use Enjoys\Forms\Traits\Attributes;
 use EnjoysCMS\Core\Block\AbstractBlock;
 use EnjoysCMS\Core\Block\Annotation\Block;
+use EnjoysCMS\Module\Catalog\Helpers\BaseRenderer;
 use EnjoysCMS\Module\Catalog\Repository\Category;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -57,7 +58,7 @@ final class SearchBlock extends AbstractBlock
         $form = \EnjoysCMS\Module\Catalog\Controller\Search::getSearchForm($this->request, $this->categoryRepository, $this->urlGenerator);
 
         /** @var RendererInterface $renderer */
-        $renderer = $this->getOption('renderer', HtmlRenderer::class);
+        $renderer = $this->getOption('renderer', BaseRenderer::class);
         return $this->twig->render(
             $this->getOption('template'),
             [
