@@ -43,7 +43,7 @@ final class DefaultSearch implements SearchInterface
                 ->getFoundProductsQueryBuilder(
                     $searchQuery->query,
                     $searchQuery->optionKeys,
-                    $searchQuery->getCategory()
+                    $searchQuery->category
                 )
                 ->setFirstResult($offset)
                 ->setMaxResults($limit)
@@ -60,7 +60,7 @@ final class DefaultSearch implements SearchInterface
     private function getFoundProductsQueryBuilder(
         string $searchQuery,
         array $optionKeys = [],
-        ?string $category = null
+        ?\EnjoysCMS\Module\Catalog\Entity\Category $category = null
     ): QueryBuilder {
         $qb = $this->productRepository->createQueryBuilder('p')
             ->select('p', 'm', 'u', 'ov', 'c')
@@ -80,11 +80,9 @@ final class DefaultSearch implements SearchInterface
             ])//
         ;
 
-//        dd($this->categoryRepository->getAllIds($this->categoryRepository->find($category)));
-//        dd($category)
         if ($category !== null) {
             $qb->andWhere('p.category IN (:ids)')
-                ->setParameter('ids', $this->categoryRepository->getAllIds($this->categoryRepository->find($category)));
+                ->setParameter('ids', $this->categoryRepository->getAllIds($category));
         }
         return $qb;
     }

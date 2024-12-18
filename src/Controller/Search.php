@@ -10,6 +10,11 @@ use DI\Container;
 use DI\DependencyException;
 use DI\NotFoundException;
 use Doctrine\ORM\Exception\NotSupported;
+use Enjoys\Forms\Exception\ExceptionRule;
+use Enjoys\Forms\Form;
+use Enjoys\Forms\Renderer\Html\HtmlRenderer;
+use Enjoys\Forms\Renderer\Renderer;
+use Enjoys\Forms\Rules;
 use EnjoysCMS\Core\Pagination\Pagination;
 use EnjoysCMS\Module\Catalog\Entity\Category;
 use EnjoysCMS\Module\Catalog\Entity\Image;
@@ -22,7 +27,9 @@ use EnjoysCMS\Module\Catalog\Service\Search\SearchQuery;
 use Exception;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
@@ -49,8 +56,10 @@ final class Search extends PublicController
      * @throws DependencyException
      * @throws NotFoundException
      */
-    public function __construct(Container $container)
-    {
+    public function __construct(
+        Container $container,
+        private readonly \EnjoysCMS\Module\Catalog\Repository\Category $categoryRepository
+    ) {
         parent::__construct($container);
         $this->optionKeys = explode(',', $this->config->getSearchOptionField());
         $this->search = $container->get($this->config->get('searchClass', DefaultSearch::class));
@@ -89,8 +98,13 @@ final class Search extends PublicController
         );
 
         try {
-            $this->searchQuery = new SearchQuery($this->normalizeQuery(), $this->optionKeys);
-            // $this->search->setSearchQuery($this->searchQuery);
+            $this->searchQuery = new SearchQuery(
+                query: $this->normalizeQuery(),
+                optionKeys: $this->optionKeys,
+                category: $this->categoryRepository->find(
+                    $this->request->getQueryParams()['category'] ?? $this->request->getParsedBody()['category'] ?? 0
+                ),
+            );
 
             $searchResult = $this->search->getResult($pagination->getOffset(), $pagination->getLimitItems());
 
@@ -168,9 +182,13 @@ final class Search extends PublicController
     }
 
     /**
+     * @return ResponseInterface
+     * @throws DependencyException
+     * @throws LoaderError
+     * @throws NotFoundException
      * @throws RuntimeError
      * @throws SyntaxError
-     * @throws LoaderError
+     * @throws ExceptionRule
      */
     #[Route(
         path: '/catalog/search',
@@ -187,7 +205,7 @@ final class Search extends PublicController
             $this->searchQuery = new SearchQuery(
                 query: $this->normalizeQuery(),
                 optionKeys: $this->optionKeys,
-                category: $this->request->getQueryParams()['category'] ?? null,
+                category: $this->categoryRepository->find($this->request->getQueryParams()['category'] ?? 0),
             );
 
             $result = $this->search->getResult(
@@ -209,6 +227,11 @@ final class Search extends PublicController
         $this->breadcrumbs->add('catalog/index', 'Каталог');
         $this->breadcrumbs->add('catalog/search', 'Поиск');
 
+        $form = self::getSearchForm($this->request, $this->categoryRepository, $this->container->get(UrlGeneratorInterface::class));
+        /** @var Renderer $renderer */
+        $renderer = $this->container->get($this->config->get('search_renderer', HtmlRenderer::class));
+        $renderer->setForm($form);
+
         return $this->response(
             $this->twig->render($template_path, [
                 'pagination' => $pagination,
@@ -217,7 +240,35 @@ final class Search extends PublicController
                 'searchQuery' => $this->searchQuery ?? null,
                 'result' => $result ?? null,
                 'breadcrumbs' => $this->breadcrumbs,
+                'rendererForm' => $renderer,
             ])
         );
+    }
+
+    /**
+     * @throws ExceptionRule
+     */
+    public static function getSearchForm(
+        ServerRequestInterface $request,
+        \EnjoysCMS\Module\Catalog\Repository\Category $categoryRepository,
+        UrlGeneratorInterface $urlGenerator
+    ): Form {
+        $form = new Form('get', $urlGenerator->generate('catalog/search'));
+        $form->setDefaults([
+            'q' => $request->getQueryParams()['q'] ?? null,
+            'category' => $request->getQueryParams()['category'] ?? [],
+        ]);
+        $form->search('q')->addRule(Rules::LENGTH, ['>=' => 3]);
+        $form->select('category')->fill(static function () use ($categoryRepository) {
+            $data = ['Все категории'];
+            /** @var Category $category */
+            foreach ($categoryRepository->getChildNodes() as $category) {
+                $data[$category->getId()] = $category->getTitle();
+            }
+            return $data;
+        });
+        $form->submit('_submit');
+
+        return $form;
     }
 }

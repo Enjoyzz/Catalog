@@ -54,21 +54,7 @@ final class SearchBlock extends AbstractBlock
      */
     public function view(): string
     {
-        $form = new Form('get', $this->urlGenerator->generate('catalog/search'));
-        $form->setDefaults([
-            'q' => $this->request->getQueryParams()['q'] ?? null,
-            'category' => $this->request->getQueryParams()['category'] ?? [],
-        ]);
-        $form->search('q')->addRule(Rules::LENGTH, ['>=' => 3]);
-        $form->select('category')->fill(function () {
-            $data = ['Все категории'];
-            /** @var \EnjoysCMS\Module\Catalog\Entity\Category $category */
-            foreach ($this->categoryRepository->getChildNodes() as $category) {
-                $data[$category->getId()] = $category->getTitle();
-            }
-            return $data;
-        });
-        $form->submit('_submit');
+        $form = \EnjoysCMS\Module\Catalog\Controller\Search::getSearchForm($this->request, $this->categoryRepository, $this->urlGenerator);
 
         /** @var RendererInterface $renderer */
         $renderer = $this->getOption('renderer', HtmlRenderer::class);

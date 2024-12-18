@@ -2,23 +2,19 @@
 
 namespace EnjoysCMS\Module\Catalog\Service\Search;
 
+use EnjoysCMS\Module\Catalog\Entity\Category;
+
 final class SearchQuery
 {
 
     public function __construct(
         public readonly string $query,
         public readonly array $optionKeys = [],
-        private ?string $category = null,
+        public ?Category $category = null,
     ) {
-        if ($this->category === 'all' || (int)$this->category === 0) {
-            $this->category = null;
-        }
+
     }
 
-    public function getCategory(): ?string
-    {
-        return $this->category;
-    }
 
 
 }
