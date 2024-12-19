@@ -24,6 +24,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Component\Serializer\Encoder\EncoderInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
@@ -290,5 +291,131 @@ class ProductController extends AbstractController
                 ],
             ])
         ]);
+    }
+
+    #[\EnjoysCMS\Core\Routing\Annotation\Route(
+        path: '/api/v1/catalog/product/{id}',
+        name: 'api_v1_catalog_product_get',
+        requirements: [
+            'id' => Requirement::UUID
+        ],
+        methods: ['GET']
+    )]
+    public function getProduct(\EnjoysCMS\Module\Catalog\Repository\Product $productRepository): ResponseInterface
+    {
+        $serializer = new Serializer([
+            new ObjectNormalizer(
+                nameConverter: new class() implements NameConverterInterface {
+
+                    public function normalize(string $propertyName): string
+                    {
+                        return match ($propertyName) {
+                            'prices' => 'price',
+                            default => $propertyName
+                        };
+                    }
+
+                    public function denormalize(string $propertyName): string
+                    {
+                        return match ($propertyName) {
+                            default => $propertyName
+                        };
+                    }
+                }
+            )
+        ], $this->encoders);
+
+        $product = $productRepository->find($this->request->getAttribute('id'));
+
+        return $this->json($serializer->normalize($product, JsonEncoder::FORMAT, [
+            AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object) {
+                return match ($object::class) {
+                    Category::class => $object->getTitle(),
+                    Product::class => $object->getName(),
+                };
+            },
+            AbstractNormalizer::CIRCULAR_REFERENCE_LIMIT => 1,
+            AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true,
+            AbstractNormalizer::ATTRIBUTES => [
+                'id',
+                'name',
+                'sku',
+                'vendor' => [
+                    'id',
+                    'name'
+                ],
+                'vendorCode',
+                'barCodes',
+                'hide',
+                'active',
+                'category' => [
+                    'title',
+                    'slug',
+                    'breadcrumbs'
+                ],
+                'slug',
+                'urls',
+                'prices',
+                'defaultImage',
+                'images'
+            ],
+            AbstractNormalizer::CALLBACKS => [
+                'defaultImage' => function (?Image $image) {
+                    if ($image === null) {
+                        return null;
+                    }
+                    $storage = $this->config->getImageStorageUpload($image->getStorage());
+                    return [
+                        'original' => $storage->getUrl(
+                            $image->getFilename() . '.' . $image->getExtension()
+                        ),
+                        'small' => $storage->getUrl(
+                            $image->getFilename() . '_small.' . $image->getExtension()
+                        ),
+                        'large' => $storage->getUrl(
+                            $image->getFilename() . '_large.' . $image->getExtension()
+                        ),
+                    ];
+                },
+                'images' => function (Collection $images) {
+                    return array_map(function ($image) {
+                        /** @var Image $image */
+                        $storage = $this->config->getImageStorageUpload($image->getStorage());
+                        return [
+                            'original' => $storage->getUrl(
+                                $image->getFilename() . '.' . $image->getExtension()
+                            ),
+                            'small' => $storage->getUrl(
+                                $image->getFilename() . '_small.' . $image->getExtension()
+                            ),
+                            'large' => $storage->getUrl(
+                                $image->getFilename() . '_large.' . $image->getExtension()
+                            ),
+                        ];
+                    }, $images->toArray());
+                },
+                'prices' => function (Collection $prices) {
+                    foreach ($prices as $price) {
+                        /** @var ProductPrice $price */
+                        if ($price->getPriceGroup()->getCode() === 'PUBLIC') {
+                            return [
+                                'price' => $price->getPrice(),
+                                'currency' => $price->getCurrency()->getCode(),
+                                'format' => $price->format()
+                            ];
+                        }
+                    }
+                    return null;
+                },
+                'urls' => function (Collection $urls) {
+                    return array_map(function ($url) {
+                        /** @var Url $url */
+                        return $this->urlGenerator->generate('catalog/product', [
+                            'slug' => $url->getProduct()->getSlug($url->getPath())
+                        ]);
+                    }, $urls->toArray());
+                }
+            ],
+        ]));
     }
 }
