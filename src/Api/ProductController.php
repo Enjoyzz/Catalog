@@ -294,8 +294,8 @@ class ProductController extends AbstractController
     }
 
     #[\EnjoysCMS\Core\Routing\Annotation\Route(
-        path: '/api/v1/catalog/product/{id}',
-        name: 'api_v1_catalog_product_get',
+        path: '/api/v0/catalog/product/{id}',
+        name: 'api_v0_catalog_product_get',
         requirements: [
             'id' => Requirement::UUID
         ],
@@ -364,34 +364,11 @@ class ProductController extends AbstractController
                     if ($image === null) {
                         return null;
                     }
-                    $storage = $this->config->getImageStorageUpload($image->getStorage());
-                    return [
-                        'original' => $storage->getUrl(
-                            $image->getFilename() . '.' . $image->getExtension()
-                        ),
-                        'small' => $storage->getUrl(
-                            $image->getFilename() . '_small.' . $image->getExtension()
-                        ),
-                        'large' => $storage->getUrl(
-                            $image->getFilename() . '_large.' . $image->getExtension()
-                        ),
-                    ];
+                    return $image->getUrlsStack($this->config);
                 },
                 'images' => function (Collection $images) {
-                    return array_map(function ($image) {
-                        /** @var Image $image */
-                        $storage = $this->config->getImageStorageUpload($image->getStorage());
-                        return [
-                            'original' => $storage->getUrl(
-                                $image->getFilename() . '.' . $image->getExtension()
-                            ),
-                            'small' => $storage->getUrl(
-                                $image->getFilename() . '_small.' . $image->getExtension()
-                            ),
-                            'large' => $storage->getUrl(
-                                $image->getFilename() . '_large.' . $image->getExtension()
-                            ),
-                        ];
+                    return array_map(function (Image $image) {
+                        return $image->getUrlsStack($this->config);
                     }, $images->toArray());
                 },
                 'prices' => function (Collection $prices) {

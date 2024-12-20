@@ -6,6 +6,7 @@ declare(strict_types=1);
 namespace EnjoysCMS\Module\Catalog\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use EnjoysCMS\Module\Catalog\Config;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'catalog_product_images')]
@@ -85,6 +86,19 @@ class Image
     public function setGeneral(bool $general): void
     {
         $this->general = $general;
+    }
+
+    public function getUrlsStack(Config $config, array $mapName = ['original', 'small', 'large']): array
+    {
+        $storage = $config->getImageStorageUpload($this->storage);
+        $stack = [];
+        foreach ($mapName as $suffix) {
+            if ($suffix === 'original') {
+                $stack[$suffix] = $storage->getUrl($this->filename . '.' . $this->extension);
+            }
+            $stack[$suffix] = $storage->getUrl(sprintf($this->filename . '_%s.' . $this->extension, $suffix));
+        }
+        return $stack;
     }
 
 }
