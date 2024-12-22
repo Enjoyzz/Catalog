@@ -5,6 +5,7 @@ namespace EnjoysCMS\Module\Catalog\Controller\Api\V1;
 use DI\Container;
 use Doctrine\Common\Collections\Collection;
 use EnjoysCMS\Core\AbstractController;
+use EnjoysCMS\Core\Exception\NotFoundException;
 use EnjoysCMS\Core\Routing\Annotation\Route;
 use EnjoysCMS\Module\Catalog\Config;
 use EnjoysCMS\Module\Catalog\Entity\Category;
@@ -100,6 +101,7 @@ class Product extends AbstractController
 
     /**
      * @throws ExceptionInterface
+     * @throws NotFoundException
      */
     #[Route('/{id}', 'get', requirements: ['id' => Requirement::UUID], methods: ['GET'])]
     public function getProduct(\EnjoysCMS\Module\Catalog\Repository\Product $productRepository,): ResponseInterface
@@ -109,6 +111,9 @@ class Product extends AbstractController
             encoders: [new JsonEncoder()]
         );
         $product = $productRepository->find($this->request->getAttribute('id'));
+        if ($product === null){
+            throw new NotFoundException();
+        }
         return $this->json(
             $serializer->normalize($product, JsonEncoder::FORMAT, context: $this->getProductSerializationContext() )
         );
