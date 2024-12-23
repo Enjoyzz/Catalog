@@ -6,11 +6,13 @@ declare(strict_types=1);
 namespace EnjoysCMS\Module\Catalog\Repository;
 
 
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\QueryBuilder;
 use EnjoysCMS\Module\Catalog\Entity\Category;
 use EnjoysCMS\Module\Catalog\Entity\ProductGroup;
@@ -212,5 +214,33 @@ final class Product extends EntityRepository
         } catch (NonUniqueResultException) {
             return $qb->getResult()[0] ?? null;
         }
+    }
+
+    /**
+     * @throws QueryException
+     */
+    public function getProductsQuery(
+        int $offset = 0,
+        int $limit = 10,
+        array $criteria = [],
+        array $orders = ['p.id' => 'desc']
+    ): Query {
+        $qb = $this->getFindAllBuilder();
+
+        foreach ($orders as $sort => $dir) {
+            $qb->orderBy($sort, $dir);
+        }
+
+        foreach ($criteria as $field => $value) {
+            if ($value instanceof Criteria) {
+                $qb->addCriteria($value);
+                continue;
+            }
+            $qb->addCriteria(Criteria::create()->where(Criteria::expr()->eq($field, $value)));
+        }
+
+        return $qb->getQuery()
+            ->setFirstResult($offset)
+            ->setMaxResults($limit);
     }
 }
