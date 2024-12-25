@@ -31,15 +31,25 @@
                         serverSide: true,
                         stateSave: true,
                         stateSaveParams: function (s, data) {
-                            data.categoryId = select.val();
+                            data.category = select.val();
                         },
                         stateLoadParams: function (s, data) {
-                            select.val(data.categoryId)
+                            select.val(data.category)
                         },
                         ajax: {
-                            url: '{{ path('catalog/admin/api/get-products') }}',
-                            data: function (d) {
-                                d.categoryId = select.val();
+                            url: '{{ path('api_v1_catalog_product_get_products') }}',
+                            dataFilter: function(data){
+                                let json = jQuery.parseJSON(data);
+                                json.recordsTotal = json.total;
+                                json.recordsFiltered = json.total;
+                                json.data = json.products;
+
+                                return JSON.stringify( json ); // return JSON string
+                            },
+                            data: function (data) {
+                                data.category = select.val();
+                                data.limit = data.length;
+                                data.offset = data.start;
                             },
                         },
                         columns: [
