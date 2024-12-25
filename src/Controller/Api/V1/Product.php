@@ -21,6 +21,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
@@ -63,7 +64,7 @@ class Product extends AbstractController
                 'barCodes',
                 'category' => [
                     'title',
-                    'full_title',
+                    'fullTitle',
                     'slug',
                     'breadcrumbs'
                 ],
@@ -74,7 +75,7 @@ class Product extends AbstractController
                 'images'
             ],
             AbstractNormalizer::CALLBACKS => [
-                'category.full_title' => function (Category $category) {
+                'category.fullTitle' => function (Category $category) {
                     return $category->getFullTitle();
                 },
                 'defaultImage' => function (?Image $image) {
@@ -121,7 +122,7 @@ class Product extends AbstractController
     public function getProduct(\EnjoysCMS\Module\Catalog\Repository\Product $productRepository): ResponseInterface
     {
         $serializer = new Serializer(
-            normalizers: [new ObjectNormalizer()],
+            normalizers: [new ObjectNormalizer(nameConverter: new CamelCaseToSnakeCaseNameConverter())],
             encoders: [new JsonEncoder()]
         );
         $product = $productRepository->find($this->request->getAttribute('id'));
@@ -144,7 +145,7 @@ class Product extends AbstractController
     ): ResponseInterface {
         $criteria = [];
         $serializer = new Serializer(
-            normalizers: [new ObjectNormalizer()],
+            normalizers: [new ObjectNormalizer(nameConverter: new CamelCaseToSnakeCaseNameConverter())],
             encoders: [new JsonEncoder()]
         );
         $limit = (int)($this->request->getQueryParams()['limit'] ?? 10);
