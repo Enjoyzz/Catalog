@@ -11,6 +11,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Ramsey\Uuid\Uuid;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 /**
  * @Gedmo\Tree(type="closure")
@@ -25,9 +26,11 @@ class Category implements \Stringable
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'NONE')]
     #[ORM\Column(type: 'uuid')]
+    #[Groups(['public', 'admin'])]
     private string $id;
 
     #[ORM\Column(name: 'title', type: 'string', length: 255)]
+    #[Groups(['public', 'admin'])]
     private string $title;
 
 
@@ -51,6 +54,7 @@ class Category implements \Stringable
     private ?string $shortDescription = null;
 
     #[ORM\Column(type: 'boolean', options: ['default' => true])]
+    #[Groups(['admin'])]
     private bool $status = true;
 
 
@@ -62,18 +66,22 @@ class Category implements \Stringable
     private ?Category $parent;
 
     #[ORM\OneToMany(mappedBy: 'parent', targetEntity: Category::class)]
+    #[Groups(['public', 'admin'])]
     private Collection $children;
 
 
     #[ORM\Column(type: 'string', length: 500, nullable: true)]
+    #[Groups(['public', 'admin'])]
     private ?string $img = null;
 
     #[ORM\ManyToMany(targetEntity: OptionKey::class)]
     #[ORM\JoinTable(name: 'catalog_category_optionkey')]
+    #[Groups(['admin'])]
     private Collection $extraFields;
 
 
     #[ORM\Column(type: 'string', nullable: true, options: ['default' => null])]
+    #[Groups(['admin'])]
     private ?string $customTemplatePath = null;
 
     #[ORM\OneToOne(mappedBy: 'category', targetEntity: CategoryMeta::class, cascade: ['persist', 'remove'])]

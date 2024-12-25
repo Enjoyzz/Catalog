@@ -3,6 +3,7 @@
 namespace EnjoysCMS\Module\Catalog\Api;
 
 use DI\Container;
+use Doctrine\Migrations\Version\Direction;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Exception\NotSupported;
@@ -17,6 +18,9 @@ use Throwable;
 
 use function json_decode;
 
+/**
+ * @deprecated
+ */
 #[Route('admin/catalog/api/category', '@catalog_admin_api~category_')]
 class Category extends AbstractController
 {
@@ -56,7 +60,7 @@ class Category extends AbstractController
             $direction
         );
 
-
+//dd($categories);
         return $this->json(
             array_merge([['id' => 0, 'title' => 'Все категории']],
                 array_map(function ($id, $title) {
