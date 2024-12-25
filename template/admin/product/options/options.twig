@@ -261,24 +261,27 @@
             width: "100%",
             dropdownParent: $("#fill-by-modal"),
             ajax: {
-                url: "{{ path('@a/catalog/tools/find-products') }}",
+                url: "{{ path('api_v1_catalog_product_get_products') }}",
                 dataType: 'json',
                 delay: 250,
                 data: function (params) {
                     return {
-                        query: params.term
+                        search: {
+                            value: params.term
+                        },
+                        limit: 20
                     };
                 },
                 processResults: function (data, params) {
                     return {
-                        results: data.items,
+                        results: data.products,
                     };
                 }
 
             },
             templateResult: formatRepo,
             templateSelection: function (result) {
-                return result.title;
+                return result.name;
             }
         });
 
@@ -297,8 +300,8 @@
                 "</div>"
             );
 
-            $container.find(".select2-result-repository__title").text(result.title);
-            $container.find(".select2-result-repository__meta").text(result.category);
+            $container.find(".select2-result-repository__title").text('[SKU: '+ result.sku +'] ' + result.name);
+            $container.find(".select2-result-repository__meta").text(result.category.full_title || result.category.title);
 
             return $container;
         }
