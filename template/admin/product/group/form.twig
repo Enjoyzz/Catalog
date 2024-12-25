@@ -101,17 +101,20 @@
                 allowClear: true,
                 placeholder: 'select..',
                 ajax: {
-                    url: "{{ path('@a/catalog/tools/find-products') }}",
+                    url: "{{ path('api_v1_catalog_product_get_products') }}",
                     dataType: 'json',
                     // delay: 250,
                     data: function (params) {
                         return {
-                            query: params.term
+                            search: {
+                                value: params.term
+                            },
+                            limit: 20
                         };
                     },
                     processResults: function (data) {
                         return {
-                            results: data.items
+                            results: data.products
                         };
                     }
 
@@ -126,16 +129,16 @@
                         "</div>"
                     );
 
-                    $container.find(".select2-result---name").text('[SKU: '+ result.sku +'] ' + result.title);
+                    $container.find(".select2-result---name").text('[SKU: '+ result.sku +'] ' + result.name);
 
                     return $container;
                 },
                 templateSelection: function (result) {
                     if (result.grouped === true){
 
-                        return $('<s>[SKU: '+ result.sku +'] ' + result.title + '<s>');
+                        return $('<s>[SKU: '+ result.sku +'] ' + result.name + '<s>');
                     }
-                    return result.text || '[SKU: '+ result.sku +'] ' + result.title;
+                    return result.text || '[SKU: '+ result.sku +'] ' + result.name;
                 }
             });
         });
