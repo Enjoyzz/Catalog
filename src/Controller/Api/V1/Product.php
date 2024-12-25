@@ -37,7 +37,7 @@ class Product extends AbstractController
         parent::__construct($container);
     }
 
-    private function getProductSerializationContext(): array
+    private function getProductSerializationContext(?array $attributes = null): array
     {
 
 
@@ -49,7 +49,7 @@ class Product extends AbstractController
                     \EnjoysCMS\Module\Catalog\Entity\Product::class => $object->getName(),
                 };
             },
-            AbstractNormalizer::ATTRIBUTES => [
+            AbstractNormalizer::ATTRIBUTES => $attributes ?? [
                 'id',
                 'name',
                 'hide',
@@ -63,6 +63,7 @@ class Product extends AbstractController
                 'barCodes',
                 'category' => [
                     'title',
+                    'full_title',
                     'slug',
                     'breadcrumbs'
                 ],
@@ -73,6 +74,9 @@ class Product extends AbstractController
                 'images'
             ],
             AbstractNormalizer::CALLBACKS => [
+                'category.full_title' => function (Category $category) {
+                    return $category->getFullTitle();
+                },
                 'defaultImage' => function (?Image $image) {
                     if ($image === null) {
                         return null;
@@ -161,17 +165,7 @@ class Product extends AbstractController
                 );
         }
 
-        $searchQuery = (empty(
-            $this->request->getQueryParams()['search']['value'] ?? null
-        )) ? null : $this->request->getQueryParams()['search']['value'];
-
-        if ($searchQuery !== null) {
-            $searchCriteria = Criteria::create();
-            foreach ($this->config->get('admin->searchFields', []) as $field) {
-                $searchCriteria->orWhere(Criteria::expr()->contains($field, $searchQuery));
-            }
-            $criteria[] = $searchCriteria;
-        }
+        $criteria[] = $this->getSearchCriteria();
 
         $orders = ['p.id' => 'desc'];
         foreach ($this->request->getQueryParams()['order'] ?? [] as $item) {
@@ -182,7 +176,7 @@ class Product extends AbstractController
             $productRepository->getProductsQuery(
                 offset: $offset,
                 limit: $limit,
-                criteria: $criteria,
+                criteria: array_filter($criteria),
                 orders: $orders
             )
         );
@@ -200,5 +194,25 @@ class Product extends AbstractController
             )
 
         ]);
+    }
+
+    /**
+     * @param array $criteria
+     * @return array
+     */
+    private function getSearchCriteria(): ?Criteria
+    {
+        $searchQuery = (empty(
+            $this->request->getQueryParams()['search']['value'] ?? null
+        )) ? null : $this->request->getQueryParams()['search']['value'];
+
+        if ($searchQuery !== null) {
+            $criteria = Criteria::create();
+            foreach ($this->config->get('admin->searchFields', []) as $field) {
+                $criteria->orWhere(Criteria::expr()->contains($field, $searchQuery));
+            }
+            return $criteria;
+        }
+        return  null;
     }
 }

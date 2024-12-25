@@ -58,6 +58,7 @@ class ProductController extends AbstractController
     /**
      * @throws QueryException
      * @throws NotSupported
+     * @deprecated
      */
     #[Route(
         path: 'admin/catalog/tools/find-products',
@@ -108,6 +109,7 @@ class ProductController extends AbstractController
      * @throws ExceptionInterface
      * @throws NotFoundException
      * @throws QueryException
+     * @deprecated
      */
     #[Route(
         path: 'admin/catalog/api/get-products',
@@ -293,6 +295,9 @@ class ProductController extends AbstractController
         ]);
     }
 
+    /**
+     * @deprecated
+     */
     #[\EnjoysCMS\Core\Routing\Annotation\Route(
         path: '/api/v0/catalog/product/{id}',
         name: 'api_v0_catalog_product_get',
