@@ -43,18 +43,22 @@ class Category extends AbstractController
         $orderBy = 'sort';
         $direction = OrderByDirection::ASC;
 
-        $categories = $categoryRepository->getChildNodes($node, $criteria, $orderBy, $direction->name);
-
-        return $this->json($this->serializer->normalize($categories, 'json', $this->getSerializationContext()));
-
-//        $categories = $categoryRepository->getFormFillArray(
-//            $node,
-//            $criteria,
-//            $orderBy,
-//            $direction->name
-//        );
-//
-//        return $this->json(array_merge(['Все категории'], $categories));
+        return match ($this->request->getQueryParams()['mode'] ?? null) {
+            'flat' => $this->json(array_merge(['Все категории'],
+                $categoryRepository->getFormFillArray(
+                    $node,
+                    $criteria,
+                    $orderBy,
+                    $direction->name
+                ))),
+            default => $this->json(
+                $this->serializer->normalize(
+                    $categoryRepository->getChildNodes($node, $criteria, $orderBy, $direction->name),
+                    'json',
+                    $this->getSerializationContext()
+                )
+            )
+        };
     }
 
     private function getSerializationContext(array $groups = ['public']): array

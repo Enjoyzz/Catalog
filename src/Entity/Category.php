@@ -15,9 +15,10 @@ use Symfony\Component\Serializer\Attribute\Groups;
 
 /**
  * @Gedmo\Tree(type="closure")
- * @Gedmo\TreeClosure(class="CategoryClosure")
+ * @Gedmo\TreeClosure(class="\EnjoysCMS\Module\Catalog\Entity\CategoryClosure")
  */
-#[Gedmo\Tree(type: 'closure')]
+//#[Gedmo\Tree(type: "closure")]
+//#[Gedmo\TreeClosure(class: CategoryClosure::class)]
 #[ORM\Entity(repositoryClass: \EnjoysCMS\Module\Catalog\Repository\Category::class)]
 #[ORM\Table(name: 'catalog_categories')]
 class Category implements \Stringable
@@ -37,6 +38,7 @@ class Category implements \Stringable
     /**
      * @Gedmo\TreeLevel()
      */
+//    #[Gedmo\TreeLevel()]
     #[ORM\Column(name: 'level', type: 'integer', nullable: true)]
     private int $level;
 
@@ -61,6 +63,7 @@ class Category implements \Stringable
     /**
      * @Gedmo\TreeParent()
      */
+//    #[Gedmo\TreeParent()]
     #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'children')]
     private ?Category $parent;
@@ -263,11 +266,10 @@ class Category implements \Stringable
 
     public function getChildren(): Collection
     {
-
         $iterator = $this->children->getIterator();
 
         /** @var ArrayCollection $c */
-        $iterator->uasort(function ($first, $second){
+        $iterator->uasort(function ($first, $second) {
             return $first->getSort() <=> $second->getSort();
         });
 
@@ -287,7 +289,7 @@ class Category implements \Stringable
 
     public function addExtraField(OptionKey $field): void
     {
-        if ($this->extraFields->contains($field)){
+        if ($this->extraFields->contains($field)) {
             return;
         }
         $this->extraFields->add($field);
