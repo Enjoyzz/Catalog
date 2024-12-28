@@ -32,7 +32,7 @@ final class ProductPrice
 
 
     #[ORM\ManyToOne(targetEntity: PriceGroup::class)]
-    private $priceGroup;
+    private PriceGroup $priceGroup;
 
 
     #[ORM\ManyToOne(targetEntity: Product::class, cascade: ['persist'], inversedBy: 'prices')]
@@ -49,11 +49,17 @@ final class ProductPrice
         $this->updatedAt = new DateTime();
     }
 
+    /**
+     * @throws \Exception
+     */
     public function __toString(): string
     {
         return $this->format();
     }
 
+    /**
+     * @throws \Exception
+     */
     public function format(): string
     {
         return  $this->getCurrentCurrency()->format($this->getPrice());
@@ -138,7 +144,10 @@ final class ProductPrice
         $this->currency = $currency;
     }
 
-    public function getComputedPriceBasedQuantity(int|float $count)
+    /**
+     * @throws \Exception
+     */
+    public function getComputedPriceBasedQuantity(int|float $count): array
     {
         $rawPrice = $this->getPrice() * $count;
         return [

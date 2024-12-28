@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace EnjoysCMS\Module\Catalog\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use EnjoysCMS\Core\Users\Entity\User;
 use EnjoysCMS\Module\Catalog\Repository\WishlistRepository;

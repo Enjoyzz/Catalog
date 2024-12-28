@@ -30,7 +30,7 @@ class Category implements \Stringable
     #[Groups(['public', 'admin'])]
     private string $title;
 
-    #[Gedmo\TreeLevel()]
+    #[Gedmo\TreeLevel]
     #[ORM\Column(name: 'level', type: 'integer', nullable: true)]
     private int $level;
 
@@ -51,7 +51,7 @@ class Category implements \Stringable
     #[Groups(['admin'])]
     private bool $status = true;
 
-    #[Gedmo\TreeParent()]
+    #[Gedmo\TreeParent]
     #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'children')]
     private ?Category $parent;
@@ -252,6 +252,9 @@ class Category implements \Stringable
     }
 
 
+    /**
+     * @throws \Exception
+     */
     public function getChildren(): Collection
     {
         $iterator = $this->children->getIterator();

@@ -9,12 +9,11 @@ use Doctrine\ORM\Mapping as ORM;
 use EnjoysCMS\Module\Catalog\Admin\Product\Options\OptionType;
 use EnjoysCMS\Module\Catalog\Repository\OptionKeyRepository;
 use JMS\Serializer\Annotation as JMS;
-use Stringable;
 
 
 #[ORM\Entity(repositoryClass: OptionKeyRepository::class)]
 #[ORM\Table(name: 'catalog_product_option_keys')]
-class OptionKey implements Stringable
+class OptionKey implements \Stringable
 {
 
     #[ORM\Id]

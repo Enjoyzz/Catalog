@@ -24,7 +24,7 @@ final class Quantity
 
 
     #[ORM\OneToOne(inversedBy: 'quantity', targetEntity: Product::class)]
-    private $product;
+    private Product $product;
 
     #[ORM\Column(type: 'float', options: ['default' => 0])]
     private float $qty = 0;
@@ -44,7 +44,7 @@ final class Quantity
 
     #[ORM\Column(name: 'updated_at', type: 'datetime', nullable: true)]
     #[Gedmo\Timestampable(on: 'update')]
-    private ?DateTimeInterface $updatedAt = null;
+    private ?DateTimeInterface $updatedAt;
 
 
     #[ORM\Column(name: 'arrival_date', type: 'datetime', nullable: true)]
