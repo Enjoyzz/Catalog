@@ -13,12 +13,8 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Serializer\Attribute\Groups;
 
-/**
- * @Gedmo\Tree(type="closure")
- * @Gedmo\TreeClosure(class="\EnjoysCMS\Module\Catalog\Entity\CategoryClosure")
- */
-//#[Gedmo\Tree(type: "closure")]
-//#[Gedmo\TreeClosure(class: CategoryClosure::class)]
+#[Gedmo\Tree(type: "closure")]
+#[Gedmo\TreeClosure(class: CategoryClosure::class)]
 #[ORM\Entity(repositoryClass: \EnjoysCMS\Module\Catalog\Repository\Category::class)]
 #[ORM\Table(name: 'catalog_categories')]
 class Category implements \Stringable
@@ -34,11 +30,7 @@ class Category implements \Stringable
     #[Groups(['public', 'admin'])]
     private string $title;
 
-
-    /**
-     * @Gedmo\TreeLevel()
-     */
-//    #[Gedmo\TreeLevel()]
+    #[Gedmo\TreeLevel()]
     #[ORM\Column(name: 'level', type: 'integer', nullable: true)]
     private int $level;
 
@@ -59,11 +51,7 @@ class Category implements \Stringable
     #[Groups(['admin'])]
     private bool $status = true;
 
-
-    /**
-     * @Gedmo\TreeParent()
-     */
-//    #[Gedmo\TreeParent()]
+    #[Gedmo\TreeParent()]
     #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'children')]
     private ?Category $parent;
