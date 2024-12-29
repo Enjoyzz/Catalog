@@ -31,28 +31,23 @@ class CurrencyRate
         return $this->currencyMain->getCode().$this->currencyConvert->getCode();
     }
 
-    /**
-     * @return mixed
-     */
-    public function getCurrencyMain()
+
+    public function getCurrencyMain(): Currency
     {
         return $this->currencyMain;
     }
 
-    public function setCurrencyMain(mixed $currencyMain): void
+    public function setCurrencyMain(Currency $currencyMain): void
     {
         $this->currencyMain = $currencyMain;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getCurrencyConvert()
+    public function getCurrencyConvert(): Currency
     {
         return $this->currencyConvert;
     }
 
-    public function setCurrencyConvert(mixed $currencyConvert): void
+    public function setCurrencyConvert(Currency $currencyConvert): void
     {
         $this->currencyConvert = $currencyConvert;
     }
