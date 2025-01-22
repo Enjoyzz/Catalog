@@ -10,7 +10,7 @@ use Doctrine\ORM\Exception\NotSupported;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Enjoys\Forms\Form;
-use Enjoys\Forms\Interfaces\RendererInterface;
+use Enjoys\Forms\Renderer\Renderer;
 use EnjoysCMS\Core\Block\AbstractBlock;
 use EnjoysCMS\Core\Block\Annotation\Block;
 use EnjoysCMS\Module\Catalog\Entity\Category;
@@ -52,9 +52,8 @@ class FilterBlock extends AbstractBlock
         private readonly ServerRequestInterface $request,
         private readonly EntityManager $em,
         private readonly FilterFactory $filterFactory,
-        private readonly RendererInterface $renderForm,
+        private readonly Renderer $renderForm,
     ) {
-
     }
 
     /**
@@ -102,10 +101,9 @@ class FilterBlock extends AbstractBlock
         $hasFilters = false;
 
         foreach ($allowedFilters as $filterMetaData) {
-
             $filter = $this->filterFactory->create($filterMetaData->getFilterType(), $filterMetaData->getParams());
 
-            if ($filter === null){
+            if ($filter === null) {
                 continue;
             }
 
