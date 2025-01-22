@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Exception\NotSupported;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
+use Enjoys\Forms\Exception\ExceptionRule;
 use Enjoys\Forms\Form;
 use Enjoys\Forms\Renderer\Renderer;
 use EnjoysCMS\Core\Block\AbstractBlock;
@@ -19,6 +20,7 @@ use EnjoysCMS\Module\Catalog\Entity\Product;
 use EnjoysCMS\Module\Catalog\Repository\FilterRepository;
 use EnjoysCMS\Module\Catalog\Service\Filters\FilterFactory;
 use Psr\Http\Message\ServerRequestInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Environment;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -53,6 +55,7 @@ class FilterBlock extends AbstractBlock
         private readonly EntityManager $em,
         private readonly FilterFactory $filterFactory,
         private readonly Renderer $renderForm,
+        private readonly UrlGeneratorInterface $urlGenerator,
     ) {
     }
 
@@ -65,6 +68,7 @@ class FilterBlock extends AbstractBlock
      * @throws SyntaxError
      * @throws DependencyException
      * @throws NotFoundException
+     * @throws ExceptionRule
      */
     public function view(): string
     {
@@ -93,8 +97,12 @@ class FilterBlock extends AbstractBlock
             'id'
         );
 
-
-        $form = new Form('get');
+        $form = new Form(
+            method: 'GET',
+            action: $this->urlGenerator->generate('catalog/category', [
+                'slug' => $this->request->getAttribute('slug'),
+            ])
+        );
 
         $form->setDefaults(['filter' => $this->request->getQueryParams()['filter'] ?? []]);
 
