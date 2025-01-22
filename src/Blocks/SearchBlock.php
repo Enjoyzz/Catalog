@@ -6,17 +6,8 @@ declare(strict_types=1);
 namespace EnjoysCMS\Module\Catalog\Blocks;
 
 
-use Enjoys\Forms\Attribute;
-use Enjoys\Forms\AttributeFactory;
-use Enjoys\Forms\Elements\Search;
-use Enjoys\Forms\Elements\Submit;
-use Enjoys\Forms\Elements\Text;
 use Enjoys\Forms\Exception\ExceptionRule;
-use Enjoys\Forms\Form;
 use Enjoys\Forms\Interfaces\RendererInterface;
-use Enjoys\Forms\Renderer\Html\HtmlRenderer;
-use Enjoys\Forms\Rules;
-use Enjoys\Forms\Traits\Attributes;
 use EnjoysCMS\Core\Block\AbstractBlock;
 use EnjoysCMS\Core\Block\Annotation\Block;
 use EnjoysCMS\Module\Catalog\Helpers\BaseRenderer;
@@ -55,7 +46,11 @@ final class SearchBlock extends AbstractBlock
      */
     public function view(): string
     {
-        $form = \EnjoysCMS\Module\Catalog\Controller\Search::getSearchForm($this->request, $this->categoryRepository, $this->urlGenerator);
+        $form = \EnjoysCMS\Module\Catalog\Controller\Search::getSearchForm(
+            $this->request,
+            $this->categoryRepository,
+            $this->urlGenerator
+        );
 
         /** @var RendererInterface $renderer */
         $renderer = $this->getOption('renderer', BaseRenderer::class);
