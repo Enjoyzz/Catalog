@@ -36,10 +36,10 @@ class OptionFilter implements FilterInterface
             'OptionKey Id not found'
         );
 
-        $currentValues = $this->params->getParams()['currentValues'];
+        $currentValues = (array)($this->params->currentValues ?? []);
 
-        if (in_array('max', array_keys($currentValues ?? []))
-            || in_array('min', array_keys($currentValues ?? []))
+        if (in_array('max', array_keys($currentValues))
+            || in_array('min', array_keys($currentValues))
         ) {
             if (($currentValues['max'] ?? '') !== '' || ($currentValues['min'] ?? '') !== '') {
                 $this->activeFilter = true;
