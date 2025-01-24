@@ -29,6 +29,8 @@ storageUploads:
       permissionMap:
         dir:
           private: 0o755
+      config:
+        public_url: /upload/catalog
 
   file_default:
     EnjoysCMS\Core\StorageUpload\Local:
