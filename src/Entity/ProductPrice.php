@@ -146,6 +146,7 @@ final class ProductPrice
 
     /**
      * @throws \Exception
+     * @return array{rawPrice: float|int, formattedPrice: string}
      */
     public function getComputedPriceBasedQuantity(int|float $count): array
     {
