@@ -7,6 +7,7 @@ namespace EnjoysCMS\Module\Catalog\Admin\Product\Images;
 
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
 use EnjoysCMS\Module\Catalog\Config;
@@ -23,16 +24,12 @@ final class ManageImage
 
     public function __construct(
         private readonly Product $product,
-        private readonly EntityManager $entityManager,
+        private readonly EntityManagerInterface $entityManager,
         private readonly Config $config,
     ) {
         $this->productImages = $entityManager->getRepository(Image::class)->findBy(['product' => $this->product]);
     }
 
-    /**
-     * @throws OptimisticLockException
-     * @throws ORMException
-     */
     public function addToDB(string $filename, string $extension): void
     {
         $image = new Image();

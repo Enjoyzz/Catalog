@@ -17,12 +17,17 @@ use Doctrine\ORM\QueryBuilder;
 use Gedmo\Exception\InvalidArgumentException;
 use Gedmo\Tree\Entity\Repository\ClosureTreeRepository;
 
+/**
+ * @method \EnjoysCMS\Module\Catalog\Entity\Category|null findOneBy(array $criteria, array $orderBy = null)
+ * @method \EnjoysCMS\Module\Catalog\Entity\Category[] findAll()
+ * @method \EnjoysCMS\Module\Catalog\Entity\Category[] findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
 class Category extends ClosureTreeRepository
 {
 
     public function find($id, $lockMode = null, $lockVersion = null)
     {
-        if (empty($id)){
+        if (empty($id)) {
             return null;
         }
         return parent::find($id, $lockMode, $lockVersion);
@@ -232,15 +237,17 @@ class Category extends ClosureTreeRepository
     {
         /** @var \EnjoysCMS\Module\Catalog\Entity\Category[] $nodes */
         $nodes = $this->getChildren($node);
-        $ids = array_filter(array_map(
-            function ($node) {
-                if (!$node->isStatus()){
-                    return null;
-                }
-                return $node?->getId();
-            },
-            $nodes
-        ));
+        $ids = array_filter(
+            array_map(
+                function ($node) {
+                    if (!$node->isStatus()) {
+                        return null;
+                    }
+                    return $node?->getId();
+                },
+                $nodes
+            )
+        );
         $ids[] = $node?->getId();
         return $ids;
     }
