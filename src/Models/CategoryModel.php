@@ -40,10 +40,6 @@ use RuntimeException;
 final class CategoryModel implements ModelInterface
 {
 
-
-    private Repository\Category|ObjectRepository|EntityRepository $categoryRepository;
-
-    private Repository\Product|ObjectRepository|EntityRepository $productRepository;
     private Category $category;
     private Pagination $pagination;
 
@@ -56,6 +52,8 @@ final class CategoryModel implements ModelInterface
     public function __construct(
         private readonly EntityManager $em,
         private readonly InvokerInterface $invoker,
+        private readonly Repository\Category $categoryRepository,
+        private readonly Repository\Product $productRepository,
         private readonly ServerRequestInterface $request,
         private readonly BreadcrumbCollection $breadcrumbs,
         private readonly RedirectInterface $redirect,
@@ -64,8 +62,6 @@ final class CategoryModel implements ModelInterface
         private readonly Config $config,
         private readonly Setting $setting,
     ) {
-        $this->categoryRepository = $this->em->getRepository(Category::class);
-        $this->productRepository = $this->em->getRepository(Product::class);
 
         $this->category = $this->categoryRepository->findByPath(
             $this->request->getAttribute('slug', '')
@@ -200,9 +196,11 @@ final class CategoryModel implements ModelInterface
             }
         }
 
+
         return [
             'meta' => $this->getMeta(),
             'category' => $this->category,
+            'categoryRepository' => $this->categoryRepository,
             'pagination' => $this->pagination,
             'products' => $result,
             'config' => $this->config,
