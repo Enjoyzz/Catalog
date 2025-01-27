@@ -40,9 +40,6 @@ class Product extends AbstractController
 
     private function getProductSerializationContext(?array $attributes = null): array
     {
-
-
-
         return [
             AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object) {
                 return match ($object::class) {
@@ -51,29 +48,29 @@ class Product extends AbstractController
                 };
             },
             AbstractNormalizer::ATTRIBUTES => $attributes ?? [
-                'id',
-                'name',
-                'hide',
-                'active',
-                'sku',
-                'vendor' => [
                     'id',
-                    'name'
-                ],
-                'vendorCode',
-                'barCodes',
-                'category' => [
-                    'title',
-                    'fullTitle',
+                    'name',
+                    'hide',
+                    'active',
+                    'sku',
+                    'vendor' => [
+                        'id',
+                        'name'
+                    ],
+                    'vendorCode',
+                    'barCodes',
+                    'category' => [
+                        'title',
+                        'fullTitle',
+                        'slug',
+                        'breadcrumbs'
+                    ],
                     'slug',
-                    'breadcrumbs'
+                    'urls',
+                    'prices',
+                    'defaultImage',
+                    'images'
                 ],
-                'slug',
-                'urls',
-                'prices',
-                'defaultImage',
-                'images'
-            ],
             AbstractNormalizer::CALLBACKS => [
                 'category.fullTitle' => function (Category $category) {
                     return $category->getFullTitle();
@@ -130,7 +127,13 @@ class Product extends AbstractController
             throw new NotFoundException();
         }
         return $this->json(
-            $serializer->normalize($product, JsonEncoder::FORMAT, context: $this->getProductSerializationContext())
+            $serializer->normalize(
+                $product,
+                JsonEncoder::FORMAT,
+                context: $this->getProductSerializationContext(
+                $this->getSerializationAttributes()
+            )
+            )
         );
     }
 
@@ -214,6 +217,36 @@ class Product extends AbstractController
             }
             return $criteria;
         }
-        return  null;
+        return null;
+    }
+
+    private function getSerializationAttributes(): ?array
+    {
+        if ($this->identity->getUser()->isAdmin()) {
+            return null;
+        }
+
+        return [
+            'id',
+            'name',
+            'sku',
+            'vendor' => [
+                'id',
+                'name'
+            ],
+            'vendorCode',
+            'barCodes',
+            'category' => [
+                'title',
+                'fullTitle',
+                'slug',
+                'breadcrumbs'
+            ],
+            'slug',
+            'urls',
+            'prices',
+            'defaultImage',
+            'images'
+        ];
     }
 }
