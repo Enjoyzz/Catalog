@@ -87,17 +87,32 @@ class Product extends AbstractController
                     }, $images->toArray());
                 },
                 'prices' => function (Collection $prices) {
+                    $result = [];
                     foreach ($prices as $price) {
                         /** @var ProductPrice $price */
-                        if ($price->getPriceGroup()->getCode() === $this->config->getDefaultPriceGroup()) {
-                            return [
+
+                        if ($this->identity->getUser()->isAdmin()) {
+                            $result[$price->getPriceGroup()->getCode()] = [
+                                'price' => $price->getPrice(),
+                                'currency' => $price->getCurrency()->getCode(),
+                                'format' => $price->format()
+                            ];
+                            continue;
+                        }
+
+                        if (in_array(
+                            $price->getPriceGroup()->getCode(),
+                            [$this->config->getDefaultPriceGroup(), $this->config->getOldPriceGroupName()],
+                            true
+                        )) {
+                            $result[$price->getPriceGroup()->getCode()] = [
                                 'price' => $price->getPrice(),
                                 'currency' => $price->getCurrency()->getCode(),
                                 'format' => $price->format()
                             ];
                         }
                     }
-                    return null;
+                    return $result;
                 },
                 'urls' => function (Collection $urls) {
                     return array_map(function ($url) {
@@ -131,8 +146,8 @@ class Product extends AbstractController
                 $product,
                 JsonEncoder::FORMAT,
                 context: $this->getProductSerializationContext(
-                $this->getSerializationAttributes()
-            )
+                    $this->getSerializationAttributes()
+                )
             )
         );
     }

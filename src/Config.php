@@ -270,6 +270,11 @@ final class Config extends AbstractModuleConfig
         return $this->get('priceGroup->default', 'ROZ');
     }
 
+    public function getOldPriceGroupName(): string
+    {
+        return $this->get('priceGroup->oldPriceGroupName', 'OLD');
+    }
+
     public function getDelimiterOptions(string $default = '|'): string
     {
         return $this->get('delimiterOptions') ?? $default;
