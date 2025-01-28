@@ -10,6 +10,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use EnjoysCMS\Module\Catalog\Admin\Product\Options\OptionType;
 use EnjoysCMS\Module\Catalog\Repository\OptionValueRepository;
+use Symfony\Component\Serializer\Annotation\Ignore;
 
 #[ORM\Table(name: 'catalog_product_option_values')]
 #[ORM\Entity(repositoryClass: OptionValueRepository::class)]

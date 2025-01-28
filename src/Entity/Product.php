@@ -527,9 +527,9 @@ class Product
         return $this->group;
     }
 
-    public function getGroupOptionValue(): Collection
+    public function getGroupOptionValue(): ?Collection
     {
-        return $this->group->getOptions();
+        return $this->group?->getOptions();
     }
 
     public function isGrouped(): bool
@@ -556,7 +556,7 @@ class Product
         $this->group = $group;
     }
 
-    public function getWishlist(): Wishlist
+    public function getWishlist(): ?Wishlist
     {
         return $this->wishlist;
     }

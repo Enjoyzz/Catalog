@@ -14,6 +14,8 @@ use EnjoysCMS\Core\Routing\Annotation\Route;
 use EnjoysCMS\Module\Catalog\Config;
 use EnjoysCMS\Module\Catalog\Entity\Category;
 use EnjoysCMS\Module\Catalog\Entity\Image;
+use EnjoysCMS\Module\Catalog\Entity\OptionKey;
+use EnjoysCMS\Module\Catalog\Entity\OptionValue;
 use EnjoysCMS\Module\Catalog\Entity\ProductPrice;
 use EnjoysCMS\Module\Catalog\Entity\Url;
 use Psr\Http\Message\ResponseInterface;
@@ -21,8 +23,11 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
+use Symfony\Component\Serializer\Mapping\Loader\AttributeLoader;
 use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 
@@ -44,9 +49,11 @@ class Product extends AbstractController
             AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object) {
                 return match ($object::class) {
                     Category::class => $object->getTitle(),
-                    \EnjoysCMS\Module\Catalog\Entity\Product::class => $object->getName(),
+                    \EnjoysCMS\Module\Catalog\Entity\Product::class => $object->getName()
                 };
             },
+            AbstractNormalizer::CIRCULAR_REFERENCE_LIMIT => 1,
+            AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true,
             AbstractNormalizer::ATTRIBUTES => $attributes ?? [
                     'id',
                     'name',
@@ -76,17 +83,15 @@ class Product extends AbstractController
                         'realQty',
                         'step',
                         'min'
-                    ]
+                    ],
+                    'options'
                 ],
             AbstractNormalizer::CALLBACKS => [
                 'category.fullTitle' => function (Category $category) {
                     return $category->getFullTitle();
                 },
                 'defaultImage' => function (?Image $image) {
-                    if ($image === null) {
-                        return null;
-                    }
-                    return $image->getUrlsStack($this->config);
+                    return $image?->getUrlsStack($this->config);
                 },
                 'images' => function (Collection $images) {
                     return array_map(function (Image $image) {
@@ -128,6 +133,21 @@ class Product extends AbstractController
                             'slug' => $url->getProduct()->getSlug($url->getPath())
                         ]);
                     }, $urls->toArray());
+                },
+                'options' => function (array $options) {
+                    $result = [];
+                    /** @var list<array{key: OptionKey, values?: non-empty-list<OptionValue>}> $options */
+                    foreach ($options as $option) {
+                        $result[] = [
+                            'key' => $option['key']->getName(),
+                            'unit' => $option['key']->getUnit(),
+                            'values' => array_map(function ($item) {
+                                return $item->getValue();
+                            }, $option['values'] ?? []),
+                            'optionName' => $option['key']->__toString(),
+                        ];
+                    }
+                    return $result;
                 }
             ],
         ];
@@ -140,8 +160,16 @@ class Product extends AbstractController
     #[Route('/{id}', 'get', requirements: ['id' => Requirement::UUID], methods: ['GET'])]
     public function getProduct(\EnjoysCMS\Module\Catalog\Repository\Product $productRepository): ResponseInterface
     {
+        $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
+
         $serializer = new Serializer(
-            normalizers: [new ObjectNormalizer(nameConverter: new CamelCaseToSnakeCaseNameConverter())],
+            normalizers: [
+                new ObjectNormalizer(
+                    classMetadataFactory: $classMetadataFactory,
+                    nameConverter: new CamelCaseToSnakeCaseNameConverter()
+                ),
+
+            ],
             encoders: [new JsonEncoder()]
         );
         $product = $productRepository->find($this->request->getAttribute('id'));
