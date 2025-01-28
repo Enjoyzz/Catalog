@@ -5,6 +5,7 @@ namespace EnjoysCMS\Module\Catalog\Controller\Api\V1;
 use DI\Container;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
+use Doctrine\ORM\Exception\NotSupported;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use EnjoysCMS\Core\AbstractController;
@@ -18,6 +19,8 @@ use EnjoysCMS\Module\Catalog\Entity\OptionKey;
 use EnjoysCMS\Module\Catalog\Entity\OptionValue;
 use EnjoysCMS\Module\Catalog\Entity\ProductPrice;
 use EnjoysCMS\Module\Catalog\Entity\Url;
+use EnjoysCMS\Module\Catalog\Models\PrepareProductModel;
+use EnjoysCMS\Module\Catalog\Repository\OptionKeyRepository;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\Requirement\Requirement;
@@ -134,10 +137,15 @@ class Product extends AbstractController
                         ]);
                     }, $urls->toArray());
                 },
-                'options' => function (array $options) {
+                'options' => function (array $options, \EnjoysCMS\Module\Catalog\Entity\Product $product) {
                     $result = [];
+                    $fields = $product->getCategory()->getExtraFields();
+
                     /** @var list<array{key: OptionKey, values?: non-empty-list<OptionValue>}> $options */
                     foreach ($options as $option) {
+                        if (!$fields->contains($option['key'])) {
+                            continue;
+                        }
                         $result[] = [
                             'key' => $option['key']->getName(),
                             'unit' => $option['key']->getUnit(),
@@ -156,10 +164,13 @@ class Product extends AbstractController
     /**
      * @throws ExceptionInterface
      * @throws NotFoundException
+     * @throws NotSupported
      */
     #[Route('/{id}', 'get', requirements: ['id' => Requirement::UUID], methods: ['GET'])]
-    public function getProduct(\EnjoysCMS\Module\Catalog\Repository\Product $productRepository): ResponseInterface
-    {
+    public function getProduct(
+        \EnjoysCMS\Module\Catalog\Repository\Product $productRepository,
+        OptionKeyRepository $optionKeyRepository
+    ): ResponseInterface {
         $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
 
         $serializer = new Serializer(
@@ -176,9 +187,17 @@ class Product extends AbstractController
         if ($product === null) {
             throw new NotFoundException();
         }
+
+        $prepareProductModel = new PrepareProductModel(
+            product: $product,
+            optionKeyRepository: $optionKeyRepository,
+            config: $this->config
+        );
+
+
         return $this->json(
             $serializer->normalize(
-                $product,
+                $prepareProductModel->getProduct(),
                 JsonEncoder::FORMAT,
                 context: $this->getProductSerializationContext(
                     $this->getSerializationAttributes()

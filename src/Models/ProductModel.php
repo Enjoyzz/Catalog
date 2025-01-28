@@ -7,7 +7,6 @@ namespace EnjoysCMS\Module\Catalog\Models;
 
 
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Exception\NotSupported;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
@@ -30,7 +29,6 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 class ProductModel implements ModelInterface
 {
 
-    private EntityRepository|Repository\Product $productRepository;
     private Product $product;
 
     /**
@@ -41,6 +39,8 @@ class ProductModel implements ModelInterface
     public function __construct(
         private readonly InvokerInterface $invoker,
         private readonly EntityManager $em,
+        private readonly Repository\OptionKeyRepository $optionKeyRepository,
+        private readonly Repository\Product $productRepository,
         private readonly ServerRequestInterface $request,
         private readonly BreadcrumbCollection $breadcrumbs,
         private readonly UrlGeneratorInterface $urlGenerator,
@@ -52,18 +52,7 @@ class ProductModel implements ModelInterface
         $entityListenerResolver = $this->em->getConfiguration()->getEntityListenerResolver();
         $entityListenerResolver->register(new ProductPriceEntityListener($this->config));
 
-        $this->productRepository = $this->em->getRepository(Product::class);
         $this->product = $this->getProduct();
-
-        $globalExtraFields = array_filter(
-            array_map(function ($item) {
-                return $this->em->getRepository(OptionKey::class)->find($item);
-            }, explode(',', $this->config->getGlobalExtraFields()))
-        );
-
-        foreach ($globalExtraFields as $globalExtraField) {
-            $this->product->getCategory()->addExtraField($globalExtraField);
-        }
     }
 
     /**
@@ -91,21 +80,24 @@ class ProductModel implements ModelInterface
                         $product->getMeta()?->getTitle() ?? $this->product->getName(),
                         $product->getCategory()?->getFullTitle(reverse: true) ?? 'Каталог'
                     );
-                }, ['product' => $this->product]
+                },
+                    ['product' => $this->product]
                 ),
                 'keywords' => $this->invoker->call(
                     $this->config->get('productMetaKeywordsCallback') ?? function (Product $product) {
                     return $product->getMeta()?->getKeyword() ?? $this->metaGenerator->generateProductKeywords(
                         $product
                     );
-                }, ['product' => $this->product]
+                },
+                    ['product' => $this->product]
                 ),
                 'description' => $this->invoker->call(
                     $this->config->get('productMetaDescriptionCallback') ?? function (Product $product) {
                     return $product->getMeta()?->getDescription() ?? $this->metaGenerator->generateProductDescription(
                         $product
                     );
-                }, ['product' => $this->product]
+                },
+                    ['product' => $this->product]
                 ),
             ],
             'product' => $this->product,
@@ -120,6 +112,7 @@ class ProductModel implements ModelInterface
     /**
      * @throws NonUniqueResultException
      * @throws NoResultException
+     * @throws NotSupported
      */
     private function getProduct(): Product
     {
@@ -127,7 +120,12 @@ class ProductModel implements ModelInterface
         if ($product === null) {
             throw new NoResultException();
         }
-        return $product;
+        $prepareProductModel = new PrepareProductModel(
+            product: $product,
+            optionKeyRepository: $this->optionKeyRepository,
+            config: $this->config
+        );
+        return $prepareProductModel->getProduct();
     }
 
     private function getBreadcrumbs(): array
