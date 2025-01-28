@@ -69,7 +69,14 @@ class Product extends AbstractController
                     'urls',
                     'prices',
                     'defaultImage',
-                    'images'
+                    'images',
+                    'quantity' => [
+                        'qty',
+                        'reserve',
+                        'realQty',
+                        'step',
+                        'min'
+                    ]
                 ],
             AbstractNormalizer::CALLBACKS => [
                 'category.fullTitle' => function (Category $category) {
@@ -261,7 +268,12 @@ class Product extends AbstractController
             'urls',
             'prices',
             'defaultImage',
-            'images'
+            'images',
+            'quantity' => [
+                'realQty',
+                'step',
+                'min'
+            ]
         ];
     }
 }
