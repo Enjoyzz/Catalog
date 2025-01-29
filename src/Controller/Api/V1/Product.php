@@ -87,7 +87,8 @@ class Product extends AbstractController
                         'step',
                         'min'
                     ],
-                    'options'
+                    'options',
+                    'wishlistNotEmpty'
                 ],
             AbstractNormalizer::CALLBACKS => [
                 'category.fullTitle' => function (Category $category) {
@@ -320,7 +321,9 @@ class Product extends AbstractController
                 'realQty',
                 'step',
                 'min'
-            ]
+            ],
+            'options',
+            'wishlistNotEmpty'
         ];
     }
 }
